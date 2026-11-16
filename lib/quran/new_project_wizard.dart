@@ -14,6 +14,7 @@ import '../theme.dart';
 import 'quran_db.dart';
 import 'quran_library_screen.dart';
 import 'resource_manager.dart';
+import 'templates.dart';
 import 'verse_select_screen.dart';
 
 class _Rec {
@@ -23,21 +24,6 @@ class _Rec {
   final String folder;
   final String urlTemplate;
 }
-
-class _Look {
-  const _Look(this.name, this.bg, this.arabic, this.translation);
-  final String name;
-  final int bg;
-  final int arabic;
-  final int translation;
-}
-
-const List<_Look> _looks = [
-  _Look('Emerald', 0xFF0B3D2E, 0xFFFFFFFF, 0xFFF6C101),
-  _Look('Midnight', 0xFF0F0B1E, 0xFFFFFFFF, 0xFFB9A0FF),
-  _Look('Royal purple', 0xFF41038B, 0xFFFFFFFF, 0xFFF6C101),
-  _Look('Sand', 0xFFF3E9D2, 0xFF1E1433, 0xFF7A4B00),
-];
 
 const String _family = 'Amiri Quran';
 const List<String> _steps = ['Details', 'Verses', 'Translation', 'Reciter', 'Template'];
@@ -52,7 +38,10 @@ class _Item {
 /// Five-step wizard from the mockup. It builds one scene per verse (plus the
 /// Basmala scene where the rules call for it) and opens the result in the editor.
 class NewProjectWizard extends StatefulWidget {
-  const NewProjectWizard({super.key});
+  const NewProjectWizard({super.key, this.templateId});
+
+  /// Template to preselect (from the Templates screen).
+  final String? templateId;
 
   @override
   State<NewProjectWizard> createState() => _NewProjectWizardState();
@@ -68,6 +57,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   String _lang = 'en_sahih';
   List<_Rec> _recs = [];
   int _rec = 0;
+  List<QTemplate> _tpls = [];
   int _look = 0;
   bool _busy = false;
   String _status = '';
@@ -80,12 +70,23 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   void initState() {
     super.initState();
     _loadReciters();
+    _loadTemplates();
   }
 
   @override
   void dispose() {
     _name.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTemplates() async {
+    final list = await QTemplates.load();
+    if (!mounted) return;
+    setState(() {
+      _tpls = list;
+      final i = list.indexWhere((t) => t.id == widget.templateId);
+      if (i >= 0) _look = i;
+    });
   }
 
   Future<void> _loadReciters() async {
@@ -252,7 +253,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       Stage.use(aw, ah);
       stageUsed = true;
       final tall = ah > aw;
-      final look = _looks[_look];
+      final look = _tpls[_look];
       for (var i = 0; i < items.length; i++) {
         final it = items[i];
         final hasTr = it.translation.isNotEmpty;
@@ -262,12 +263,12 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           type: 'text',
           text: arText,
           cy: hasTr ? 0.38 : 0.5,
-          color: look.arabic,
+          color: look.arabicColor,
           bold: false,
           lineHeight: 1.7,
           fontFamily: fontOk ? _family : '',
         );
-        _fit(arLayer, (tall ? 78 : 64) * _scale(_lineCount(arText), tall ? 7 : 5), 0.9);
+        _fit(arLayer, (tall ? look.arabicTall : look.arabicWide) * _scale(_lineCount(arText), tall ? 7 : 5), 0.9);
         final layers = <Layer>[arLayer];
         if (hasTr) {
           final trText = _wrap(it.translation, tall ? 5 : 11);
@@ -276,18 +277,18 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
             type: 'text',
             text: trText,
             cy: 0.72,
-            color: look.translation,
+            color: look.translationColor,
             bold: false,
             lineHeight: 1.3,
           );
-          _fit(trLayer, (tall ? 40 : 34) * _scale(_lineCount(trText), tall ? 8 : 4), 0.88);
+          _fit(trLayer, (tall ? look.translationTall : look.translationWide) * _scale(_lineCount(trText), tall ? 8 : 4), 0.88);
           layers.add(trLayer);
         }
         lesson.scenes.add(Scene(
           id: newId(),
           durationMs: (durations[i] > 0 ? durations[i] : 6000) + 800,
-          bgType: 'color',
-          bgValue: look.bg.toString(),
+          bgType: 'asset',
+          bgValue: look.assetFor(aw, ah),
           narrationPath: paths[i],
           narrationMs: durations[i],
           narrationClean: false,
@@ -527,38 +528,49 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     ];
   }
 
-  List<Widget> _template() => [
-        const Text(
-          'Simple colour looks for now. The full template library comes later.',
-          style: TextStyle(fontSize: 12, color: KColors.accent),
+  List<Widget> _template() {
+    if (_tpls.isEmpty) return [const Center(child: CircularProgressIndicator())];
+    return [
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.6,
         ),
-        const SizedBox(height: 10),
-        for (var i = 0; i < _looks.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => setState(() => _look = i),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Color(_looks[i].bg),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: _look == i ? KColors.gold : Colors.white24,
-                    width: _look == i ? 3 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(_looks[i].name,
-                        style: TextStyle(color: Color(_looks[i].arabic), fontWeight: FontWeight.w700)),
-                    const Spacer(),
-                    Text('Aa', style: TextStyle(color: Color(_looks[i].translation), fontSize: 20)),
-                  ],
+        itemCount: _tpls.length,
+        itemBuilder: (context, i) {
+          final t = _tpls[i];
+          return InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => setState(() => _look = i),
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _look == i ? KColors.gold : Colors.white24,
+                  width: _look == i ? 3 : 1,
                 ),
               ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(t.portraitAsset, fit: BoxFit.cover, cacheWidth: 300),
+                  Positioned(
+                    left: 6,
+                    bottom: 6,
+                    child: Text(t.name,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 12)),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ];
+          );
+        },
+      ),
+    ];
+  }
 }

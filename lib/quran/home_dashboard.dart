@@ -7,6 +7,7 @@ import '../theme.dart';
 import 'new_project_wizard.dart';
 import 'resource_manager.dart';
 import 'resources_screen.dart';
+import 'templates.dart';
 
 /// The Home tab: new project, quick actions, the latest project, templates.
 class HomeDashboard extends StatelessWidget {
@@ -74,15 +75,16 @@ class HomeDashboard extends StatelessWidget {
           _heading('Popular Templates', onOpenTemplates, 'See All'),
           const SizedBox(height: 8),
           SizedBox(
-            height: 110,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _tile('Cinematic', const [Color(0xFF7C3A12), Color(0xFF1A1431)]),
-                _tile('Minimal', const [Color(0xFF3B2A7A), Color(0xFF0F0B1E)]),
-                _tile('Elegant', const [Color(0xFF14506B), Color(0xFF0F0B1E)]),
-                _tile('Nature', const [Color(0xFF14573A), Color(0xFF0F0B1E)]),
-              ],
+            height: 130,
+            child: FutureBuilder<List<QTemplate>>(
+              future: QTemplates.load(),
+              builder: (context, snap) {
+                final list = snap.data ?? const <QTemplate>[];
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [for (final t in list.take(5)) _tile(context, t)],
+                );
+              },
             ),
           ),
         ],
@@ -269,21 +271,30 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _tile(String name, List<Color> colors) {
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.all(10),
-      alignment: Alignment.bottomLeft,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: colors,
+  Widget _tile(BuildContext context, QTemplate t) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => NewProjectWizard(templateId: t.id)),
+      ),
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(t.portraitAsset, fit: BoxFit.cover, cacheWidth: 300),
+            Positioned(
+              left: 10,
+              bottom: 8,
+              child: Text(t.name,
+                  style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ],
         ),
       ),
-      child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
     );
   }
 }

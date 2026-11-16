@@ -1,4 +1,4 @@
-# Qur'an Studio - Handover (16 Nov 2026, updated after batch 6)
+# Qur'an Studio - Handover (16 Nov 2026, updated after batch 7)
 
 Owner: Usama (Elguduwis), founder of KAIDA. GitHub: Iam4all26. Read with QURAN_STUDIO_MASTER_DOC.md, KAINUWA_STUDIO_HANDOVER.md and FAST_DELIVERY_GUIDE.md. Rules unchanged: English only, no emojis, complete files with exact paths, small zip batches (zip first, short note after), never claim code was tested, never ask for secrets, build is on his phone (K-Git Studio + GitHub Actions), free plan with a tiny usage window.
 
@@ -11,9 +11,9 @@ Owner: Usama (Elguduwis), founder of KAIDA. GitHub: Iam4all26. Read with QURAN_S
 6. Separate repository from Kainuwa Studio (code copied, no shared build).
 7. New data repo: Iam4all26/qurans-data.
 
-## 2. Status (after batch 6)
+## 2. Status (after batch 7)
 Verified by Usama on his phone: Phase 0 (one verse built into a video; Arabic and Hausa render), data repo report.json ok (114 surahs, 6,236 verses, 6 of 6 reciters, Amiri Quran), batch 2 (Resources screen downloads and verifies all 5 files; Verify data passes).
-Batch 3 (home, splash, navigation) confirmed building on his phone. Batches 4, 5 and 6 delivered, UNCOMPILED and UNTESTED until he builds. He builds later and reports errors with the build log.
+Batch 3 (home, splash, navigation) confirmed building on his phone. Batches 4 to 7 delivered, UNCOMPILED and UNTESTED until he builds. He builds later and reports errors with the build log.
 Shell repo files never to edit: kgit_build.yml (K-Git overwrites it). Batches are not cumulative: unzip each over the previous ones in order.
 
 ## 3. Batch log
@@ -25,6 +25,8 @@ Shell repo files never to edit: kgit_build.yml (K-Git overwrites it). Batches ar
 
 - Batch 6 (reciters, about, data fix): reciters_screen.dart (All, Favorites, Downloaded, delete downloads, Import My Audio list), about_screen.dart (credits; linked from Library and Settings), "Kainuwa Studio" text replaced in five screens, QuranDb reopens when a newer quran.db is installed and selfCheck now fails if the Basmala is attached to verse 1. data-repo/tools/build_data.py replaces tools/build_data.py in the qurans-data repo.
 
+- Batch 7 (own screens, templates): the old Kainuwa tabs are gone from the navigation. New: projects_screen.dart (video projects only, rename, duplicate, delete), templates_library_screen.dart (categories, favorites, tap opens the wizard with that template), more_screen.dart (Resources, Reciters, About, export defaults, app layout), templates.dart plus assets/templates/templates.json (schemaVersion 1) and 14 generated background JPGs in assets/templates/bg (7 templates, portrait and landscape). The wizard's Template step and the Home tiles read the same JSON. A template sets: background picture per orientation, Arabic and translation colours and base sizes. Old files courses_tab.dart, templates_tab.dart, settings_tab.dart, assets_tab.dart and the store are still in the tree but unused; delete them in a cleanup batch. The editor and export screens are still the Kainuwa-derived ones (restyle is Phase 4 and 5).
+
 ## 3b. Data bug found in batch 6 (important)
 The quran.db built in Phase 0 stores the Basmala glued to the start of verse 1 of every surah except 1 and 9 (checked on 2, 3, 18, 67, 114). Cause: the source text starts with an invisible BOM (U+FEFF), so the exact prefix match in strip_basmala_prefix never matched and the report said "removed from 0". The fixed script removes the BOM first, then strips the Basmala, and fails the build unless it was removed from 112 surahs or 0, and fails if any first verse still starts with it. After replacing tools/build_data.py and running the workflow, open Resources, Check for updates, update Qur'an text, then Verify data. Until then wizard videos would show the Basmala twice on verse 1 (once in the extra Basmala scene, once inside verse 1).
 
@@ -33,7 +35,7 @@ The quran.db built in Phase 0 stores the Basmala glued to the start of verse 1 o
 - Translation files are one flat list of 6,236 strings in Qur'an order; index = QuranDb.offsetOf(surah) + ayah - 1. Only en_sahih and ha_gumi exist.
 - Audio: per-ayah mp3 from the URL template in reciters.json, cached as filesDir/quran/audio/<folder>_<SSSAAA>.mp3. Scene length = audio length + 800 ms.
 - Text: Arabic layer (font Amiri Quran when downloaded) and optional translation layer. Words are wrapped by adding line breaks only (Arabic 4 per line tall or 8 wide; translation 5 or 11). Font size shrinks when a verse has many lines (Arabic over 7 tall or 5 wide lines, translation over 8 or 4). These limits are guesses; adjust after seeing long verses on the phone.
-- Colours: four simple looks (Emerald, Midnight, Royal purple, Sand) stored as scene colour backgrounds. Real templates are Phase 3.
+- Templates: read from assets/templates/templates.json; each scene uses the template's background picture (bgType asset, portrait or landscape by video shape) and colours and sizes.
 
 ## 5. Unverified (check on the phone)
 - Everything in batches 3 to 5 compiles and behaves as intended (no compiler on the server; only bracket balance was checked).
@@ -45,8 +47,8 @@ The quran.db built in Phase 0 stores the Basmala glued to the start of verse 1 o
 ## 6. Next steps
 1. Build batches 3 to 5, fix errors (grep the log for error lines; Gradle 403 or "Repository not found" is transient: re-run failed jobs).
 2. Remaining Phase 1/2 items: reciters library screen (Downloaded, Favorites, Import My Audio), project storage with schemaVersion and Qur'an layer references by (surah, verse, translation id), prune Kainuwa assets and "Kainuwa Studio" strings (project_package.dart, media_library.dart, courses_tab.dart, settings_tab.dart, export_screen.dart, plugin comment), rename plugin kainuwa_encoder, About screen with credits.
-3. Phase 3: templates as JSON (replace the four colour looks). Phase 4: editor styling, sync studio with waveform and Set Start/Set End/Auto Sync. Phase 5: export settings and success screens per mockup. Phase 6: timing import (QUL, quran-align), word highlighting.
+3. Phase 3 remainder: more templates and a template editor (colours, fonts, animations). Phase 4: editor styling, sync studio with waveform and Set Start/Set End/Auto Sync. Phase 5: export settings and success screens per mockup. Phase 6: timing import (QUL, quran-align), word highlighting.
 4. Rules in code: Qur'an text is read-only, never normalised or trimmed (only U+FEFF is removed); re-read text from the database at render time.
 
 ## 7. Merge notes
-Batch 1 is a full tree; later batches contain only changed files with repo paths. Order matters: 1 to 6. Lineage: every Kainuwa file is at its latest Kainuwa state (batch 59) except those listed above.
+Batch 1 is a full tree; later batches contain only changed files with repo paths. Order matters: 1 to 7. Lineage: every Kainuwa file is at its latest Kainuwa state (batch 59) except those listed above.

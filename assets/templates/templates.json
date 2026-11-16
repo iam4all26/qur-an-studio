@@ -1,0 +1,145 @@
+{
+ "schemaVersion": 1,
+ "templates": [
+  {
+   "id": "emerald",
+   "name": "Emerald",
+   "category": "Natural",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/emerald_p.jpg",
+    "landscape": "assets/templates/bg/emerald_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFF6C101",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "cinematic",
+   "name": "Cinematic",
+   "category": "Cinematic",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/cinematic_p.jpg",
+    "landscape": "assets/templates/bg/cinematic_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFF0B84D",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "minimal",
+   "name": "Minimal",
+   "category": "Minimal",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/minimal_p.jpg",
+    "landscape": "assets/templates/bg/minimal_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFB9C4E8",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "elegant",
+   "name": "Elegant",
+   "category": "Modern",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/elegant_p.jpg",
+    "landscape": "assets/templates/bg/elegant_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFE7C873",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "nature",
+   "name": "Nature",
+   "category": "Natural",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/nature_p.jpg",
+    "landscape": "assets/templates/bg/nature_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFD8F3A0",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "modern",
+   "name": "Modern",
+   "category": "Modern",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/modern_p.jpg",
+    "landscape": "assets/templates/bg/modern_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFFFFFFFF",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFFF6C101",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "sand",
+   "name": "Sand",
+   "category": "Minimal",
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/sand_p.jpg",
+    "landscape": "assets/templates/bg/sand_l.jpg"
+   },
+   "arabic": {
+    "color": "0xFF1E1433",
+    "sizeTall": 78,
+    "sizeWide": 64
+   },
+   "translation": {
+    "color": "0xFF7A4B00",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  }
+ ]
+}

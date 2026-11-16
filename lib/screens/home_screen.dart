@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../quran/home_dashboard.dart';
+import '../quran/more_screen.dart';
+import '../quran/projects_screen.dart';
+import '../quran/templates_library_screen.dart';
 import '../quran/quran_hub_screen.dart';
-import 'courses_tab.dart';
-import 'settings_tab.dart';
-import 'templates_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,13 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onOpenTemplates: () => _go(2),
               onOpenLibrary: () => _go(3),
             ),
-            CoursesTab(
-              onOpenSettings: () => _go(4),
-              onOpenTemplates: () => _go(2),
-            ),
-            const TemplatesTab(),
+            const ProjectsScreen(),
+            const TemplatesLibraryScreen(),
             const QuranHubScreen(),
-            const SettingsTab(),
+            const MoreScreen(),
           ],
         ),
         bottomNavigationBar: NavigationBar(
