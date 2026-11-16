@@ -25,3 +25,9 @@ flutter:
     - assets/icon/app_icon.png
     - assets/templates/
     - assets/templates/bg/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/inter_r.otf
+        - asset: assets/fonts/inter_b.otf
+          weight: 700
