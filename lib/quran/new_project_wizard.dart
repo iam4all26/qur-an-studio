@@ -58,7 +58,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   int _shape = 0; // 0 = 9:16, 1 = 16:9, 2 = 1:1
   VerseSelection? _sel;
   bool _withTr = true;
-  bool _footer = true;
+  bool _showFooter = true;
   BgChoice _bg = BgChoice();
   String _lang = 'en_sahih';
   List<_Rec> _recs = [];
@@ -311,7 +311,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           durationMs: dur,
           look: look,
           fontFamily: fontOk ? _family : '',
-          footer: _footer && it.label.isNotEmpty ? it.label : null,
+          footer: _showFooter && it.label.isNotEmpty ? it.label : null,
         );
         lesson.scenes.addAll(plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah)));
         if (durations[i] > 0) {
@@ -567,8 +567,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: const Text('Show surah and verse at the bottom'),
-        value: _footer,
-        onChanged: (v) => setState(() => _footer = v),
+        value: _showFooter,
+onChanged: (v) => setState(() => _showFooter = v),
       ),
       const Padding(
         padding: EdgeInsets.only(top: 6, bottom: 6),
