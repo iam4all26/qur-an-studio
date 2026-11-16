@@ -1017,6 +1017,14 @@ TextStyle layerTextStyle(Layer layer, {double size = 100}) {
   );
 }
 
+/// Arabic text must be laid out right to left, otherwise the stop signs between words
+/// make the bidi algorithm reorder whole chunks of a verse.
+TextDirection layerTextDirection(Layer layer) {
+  return RegExp(r'[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]').hasMatch(layer.text)
+      ? TextDirection.rtl
+      : TextDirection.ltr;
+}
+
 TextAlign layerTextAlign(Layer layer) {
   switch (layer.align) {
     case 'left':
@@ -1037,7 +1045,7 @@ const double _kBoxPadY = 8;
 Size measureLayerText(Layer layer) {
   final painter = TextPainter(
     text: TextSpan(text: layer.text.isEmpty ? ' ' : layer.text, style: layerTextStyle(layer)),
-    textDirection: TextDirection.ltr,
+    textDirection: layerTextDirection(layer),
     textAlign: layerTextAlign(layer),
   )..layout();
   var w = painter.width;
@@ -1123,6 +1131,7 @@ class LayerContent extends StatelessWidget {
             : Text.rich(
                 layerTextSpan(layer, layerTextStyle(layer)),
                 textAlign: layerTextAlign(layer),
+                textDirection: layerTextDirection(layer),
               );
         if (layer.gradOn) {
           final a = layer.gradAngle * math.pi / 180;

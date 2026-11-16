@@ -134,7 +134,7 @@ class _TextRevealViewState extends State<TextRevealView> {
     _painter?.dispose();
     _painter = TextPainter(
       text: layerTextSpan(l, layerTextStyle(l)),
-      textDirection: TextDirection.ltr,
+      textDirection: layerTextDirection(l),
       textAlign: layerTextAlign(l),
     )..layout();
     _units = textUnits(l.text, l.textAnim);

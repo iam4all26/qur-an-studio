@@ -19,17 +19,26 @@ List<Layer> buildVerseLayers({
   required String fontFamily,
   String? footer,
 }) {
+  // Display only: QuranEnc footnote markers such as [1] are not shown in the video.
+  translation = translation.replaceAll(RegExp(r'\s*\[\d+\]'), '');
   final aWords = arabic.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final tWords = translation.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final cap = tall ? 14 : 18;
   final pages = math.max(1, (aWords.length / cap).ceil());
   final layers = <Layer>[];
+  // Translation page breaks: start from the word share, then move to the nearest
+  // sentence or clause end so a page does not begin in the middle of a phrase.
+  final tb = <int>[0];
+  for (var k = 1; k < pages; k++) {
+    tb.add(_snap(tWords, (tWords.length * k / pages).round(), tb[k - 1] + 1, tWords.length - (pages - k)));
+  }
+  tb.add(tWords.length);
 
   for (var k = 0; k < pages; k++) {
     final a0 = (aWords.length * k / pages).round();
     final a1 = (aWords.length * (k + 1) / pages).round();
-    final t0 = (tWords.length * k / pages).round();
-    final t1 = (tWords.length * (k + 1) / pages).round();
+    final t0 = tb[k];
+    final t1 = tb[k + 1];
     final start = pages == 1 ? 0 : (durationMs * a0 / aWords.length).round();
     final end = (pages == 1 || k == pages - 1) ? -1 : (durationMs * a1 / aWords.length).round();
 
@@ -102,6 +111,20 @@ List<Layer> buildVerseLayers({
     layers.add(fl);
   }
   return layers;
+}
+
+int _snap(List<String> t, int idx, int lo, int hi) {
+  if (hi < lo) return idx.clamp(0, t.length);
+  final start = idx.clamp(lo, hi);
+  final window = math.max(3, (t.length / 4).round());
+  bool ends(int i) => i > 0 && i <= t.length && RegExp(r'[,.;:?!"\u201D)]$').hasMatch(t[i - 1]);
+  for (var d = 0; d <= window; d++) {
+    final a = start - d;
+    final b = start + d;
+    if (a >= lo && a <= hi && ends(a)) return a;
+    if (b >= lo && b <= hi && ends(b)) return b;
+  }
+  return start;
 }
 
 String _wrap(List<String> words, int perLine) {
