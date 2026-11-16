@@ -130,43 +130,17 @@ class _AssetSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: DefaultTabController(
-        length: 8,
-        child: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Add an icon', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-              ),
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Add an icon', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             ),
-            const TabBar(isScrollable: true, tabs: [
-              Tab(text: 'Icons'),
-              Tab(text: 'Illustrations'),
-              Tab(text: 'Social media'),
-              Tab(text: 'Developer'),
-              Tab(text: 'Languages'),
-              Tab(text: 'Crypto'),
-              Tab(text: 'Apps and stores'),
-              Tab(text: 'Payments'),
-            ]),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _PickGrid(items: allIcons(), columns: 4),
-                  _PickGrid(items: kIllustrations, columns: 3),
-                  _PickGrid(items: kSocialIcons, columns: 4),
-                  _PickGrid(items: kDeveloperIcons, columns: 4),
-                  _PickGrid(items: kLanguageIcons, columns: 4),
-                  _PickGrid(items: kCryptoIcons, columns: 4),
-                  _PickGrid(items: kAppIcons, columns: 4),
-                  _PickGrid(items: kPaymentIcons, columns: 4),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          Expanded(child: _PickGrid(items: allIcons(), columns: 4)),
+        ],
       ),
     );
   }
@@ -180,6 +154,14 @@ class _PickGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('No icons yet. Islamic icons will come from the store.', textAlign: TextAlign.center),
+        ),
+      );
+    }
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

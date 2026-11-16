@@ -1156,7 +1156,7 @@ class _ExportScreenState extends State<ExportScreen> {
       _defaultsReady = true;
     }
     if (lesson != null && !_nameReady) {
-      _nameCtl.text = 'Kainuwa_${_safeName(lesson.title)}';
+      _nameCtl.text = 'Quran_${_safeName(lesson.title)}';
       _nameReady = true;
     }
     final seconds = lesson == null ? 0 : (lesson.durationMs / 1000);

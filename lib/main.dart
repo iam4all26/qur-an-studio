@@ -12,17 +12,17 @@ Future<void> main() async {
   // Draw behind the status bar and the camera cutout (the editor handles safe areas itself).
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await StoreService.instance.init();
-  runApp(const KainuwaStudioApp());
+  runApp(const QuranStudioApp());
 }
 
-class KainuwaStudioApp extends StatefulWidget {
-  const KainuwaStudioApp({super.key});
+class QuranStudioApp extends StatefulWidget {
+  const QuranStudioApp({super.key});
 
   @override
-  State<KainuwaStudioApp> createState() => _KainuwaStudioAppState();
+  State<QuranStudioApp> createState() => _QuranStudioAppState();
 }
 
-class _KainuwaStudioAppState extends State<KainuwaStudioApp> {
+class _QuranStudioAppState extends State<QuranStudioApp> {
   late final AppState _state = AppState(StorageService());
 
   @override

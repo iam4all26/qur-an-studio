@@ -23,17 +23,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/app_icon.png
-    - assets/backgrounds/
-    - assets/icons/
-    - assets/icons_svg/
-    - assets/illustrations/
     - assets/hands/
-    - assets/brands/social/
-    - assets/brands/dev/
-    - assets/brands/lang/
-    - assets/brands/crypto/
-    - assets/brands/apps/
-    - assets/brands/pay/
+    - assets/templates/
+    - assets/templates/bg/
   fonts:
     - family: Andika
       fonts:
