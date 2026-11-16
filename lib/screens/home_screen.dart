@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../store/store_tab.dart';
 import 'assets_tab.dart';
-import '../quran/phase0_screen.dart';
+import '../quran/quran_hub_screen.dart';
 import 'courses_tab.dart';
 import 'settings_tab.dart';
 import 'templates_tab.dart';
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const AssetsTab(),
           StoreTab(active: _index == 3),
           const SettingsTab(),
-          const Phase0Screen(),
+          const QuranHubScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
-            label: 'Phase 0',
+            label: "Qur'an",
           ),
         ],
       ),

@@ -12,6 +12,8 @@ dependencies:
   kainuwa_encoder:
     path: packages/kainuwa_encoder
   photo_manager: ^3.6.4
+  sqflite: ">=2.3.3 <2.5.0"
+  crypto: ">=3.0.3 <4.0.0"
   # Kept below the versions that need xml 7, which blocks the launcher icon tool.
   flutter_svg: ">=2.0.10+1 <2.1.0"
   vector_graphics: ">=1.1.11+1 <1.2.0"
