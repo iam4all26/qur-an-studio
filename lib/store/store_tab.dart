@@ -217,7 +217,7 @@ class _StoreTabState extends State<StoreTab> {
                   child: sample
                       ? Center(
                           child: Text(
-                            'Aa\nKainuwa ɓɗƙƴ',
+                            'Aa\nQuran ɓɗƙƴ',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontFamily: installed.first.family, fontSize: 40, color: Colors.white),
                           ),

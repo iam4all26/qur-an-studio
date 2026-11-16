@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Brand colors taken from the Kainuwa Studio mockup.
+/// Brand colors taken from the Qur'an Studio mockup.
 class KColors {
   KColors._();
 

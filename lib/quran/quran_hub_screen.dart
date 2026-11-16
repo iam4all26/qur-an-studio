@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'phase0_screen.dart';
+import 'sync_studio_screen.dart';
 import 'about_screen.dart';
 import 'quran_library_screen.dart';
 import 'reciters_screen.dart';
@@ -63,12 +63,12 @@ class QuranHubScreen extends StatelessWidget {
           ),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.science_outlined),
-              title: const Text('Phase 0 test'),
-              subtitle: const Text('Build one verse video'),
+              leading: const Icon(Icons.graphic_eq),
+              title: const Text('Sync my recording'),
+              subtitle: const Text('Mark each verse in your own audio and build the video'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const Phase0Screen()),
+                MaterialPageRoute(builder: (_) => const SyncStudioScreen()),
               ),
             ),
           ),
