@@ -1,0 +1,403 @@
+name: quran_studio
+description: Offline Qur'an recitation video maker.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kainuwa_encoder:
+    path: packages/kainuwa_encoder
+  photo_manager: ^3.6.4
+  # Kept below the versions that need xml 7, which blocks the launcher icon tool.
+  flutter_svg: ">=2.0.10+1 <2.1.0"
+  vector_graphics: ">=1.1.11+1 <1.2.0"
+  vector_graphics_compiler: ">=1.1.9+1 <1.2.0"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/app_icon.png
+    - assets/backgrounds/
+    - assets/icons/
+    - assets/icons_svg/
+    - assets/illustrations/
+    - assets/hands/
+    - assets/brands/social/
+    - assets/brands/dev/
+    - assets/brands/lang/
+    - assets/brands/crypto/
+    - assets/brands/apps/
+    - assets/brands/pay/
+  fonts:
+    - family: Andika
+      fonts:
+        - asset: assets/fonts/andika_r.ttf
+        - asset: assets/fonts/andika_b.ttf
+          weight: 700
+    - family: Anton
+      fonts:
+        - asset: assets/fonts/anton_r.ttf
+    - family: Arimo
+      fonts:
+        - asset: assets/fonts/arimo_r.ttf
+        - asset: assets/fonts/arimo_b.ttf
+          weight: 700
+    - family: Charis SIL
+      fonts:
+        - asset: assets/fonts/charissil_r.ttf
+        - asset: assets/fonts/charissil_b.ttf
+          weight: 700
+    - family: Cousine
+      fonts:
+        - asset: assets/fonts/cousine_r.ttf
+        - asset: assets/fonts/cousine_b.ttf
+          weight: 700
+    - family: EB Garamond
+      fonts:
+        - asset: assets/fonts/ebgaramond_r.ttf
+        - asset: assets/fonts/ebgaramond_b.ttf
+          weight: 700
+    - family: Fira Sans
+      fonts:
+        - asset: assets/fonts/firasans_r.ttf
+        - asset: assets/fonts/firasans_b.ttf
+          weight: 700
+    - family: Gentium Book Plus
+      fonts:
+        - asset: assets/fonts/gentiumbookplus_r.ttf
+        - asset: assets/fonts/gentiumbookplus_b.ttf
+          weight: 700
+    - family: Gentium Plus
+      fonts:
+        - asset: assets/fonts/gentiumplus_r.ttf
+        - asset: assets/fonts/gentiumplus_b.ttf
+          weight: 700
+    - family: Great Vibes
+      fonts:
+        - asset: assets/fonts/greatvibes_r.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/inter_r.ttf
+        - asset: assets/fonts/inter_b.ttf
+          weight: 700
+    - family: Lato
+      fonts:
+        - asset: assets/fonts/lato_r.ttf
+        - asset: assets/fonts/lato_b.ttf
+          weight: 700
+    - family: Libre Baskerville
+      fonts:
+        - asset: assets/fonts/librebaskerville_r.ttf
+        - asset: assets/fonts/librebaskerville_b.ttf
+          weight: 700
+    - family: Merriweather
+      fonts:
+        - asset: assets/fonts/merriweather_r.ttf
+        - asset: assets/fonts/merriweather_b.ttf
+          weight: 700
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/montserrat_r.ttf
+        - asset: assets/fonts/montserrat_b.ttf
+          weight: 700
+    - family: Noto Sans
+      fonts:
+        - asset: assets/fonts/notosans_r.ttf
+        - asset: assets/fonts/notosans_b.ttf
+          weight: 700
+    - family: Noto Sans Display
+      fonts:
+        - asset: assets/fonts/notosansdisplay_r.ttf
+        - asset: assets/fonts/notosansdisplay_b.ttf
+          weight: 700
+    - family: Noto Sans Mono
+      fonts:
+        - asset: assets/fonts/notosansmono_r.ttf
+        - asset: assets/fonts/notosansmono_b.ttf
+          weight: 700
+    - family: Noto Serif
+      fonts:
+        - asset: assets/fonts/notoserif_r.ttf
+        - asset: assets/fonts/notoserif_b.ttf
+          weight: 700
+    - family: Noto Serif Display
+      fonts:
+        - asset: assets/fonts/notoserifdisplay_r.ttf
+        - asset: assets/fonts/notoserifdisplay_b.ttf
+          weight: 700
+    - family: Tinos
+      fonts:
+        - asset: assets/fonts/tinos_r.ttf
+        - asset: assets/fonts/tinos_b.ttf
+          weight: 700
+    - family: Barlow
+      fonts:
+        - asset: assets/fonts/barlow_r.ttf
+        - asset: assets/fonts/barlow_b.ttf
+          weight: 700
+    - family: Cabin
+      fonts:
+        - asset: assets/fonts/cabin_r.ttf
+        - asset: assets/fonts/cabin_b.ttf
+          weight: 700
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/dmsans_r.ttf
+        - asset: assets/fonts/dmsans_b.ttf
+          weight: 700
+    - family: Kanit
+      fonts:
+        - asset: assets/fonts/kanit_r.ttf
+        - asset: assets/fonts/kanit_b.ttf
+          weight: 700
+    - family: Karla
+      fonts:
+        - asset: assets/fonts/karla_r.ttf
+        - asset: assets/fonts/karla_b.ttf
+          weight: 700
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope_r.ttf
+        - asset: assets/fonts/manrope_b.ttf
+          weight: 700
+    - family: Mulish
+      fonts:
+        - asset: assets/fonts/mulish_r.ttf
+        - asset: assets/fonts/mulish_b.ttf
+          weight: 700
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/nunito_r.ttf
+        - asset: assets/fonts/nunito_b.ttf
+          weight: 700
+    - family: Open Sans
+      fonts:
+        - asset: assets/fonts/opensans_r.ttf
+        - asset: assets/fonts/opensans_b.ttf
+          weight: 700
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/outfit_r.ttf
+        - asset: assets/fonts/outfit_b.ttf
+          weight: 700
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/poppins_r.ttf
+        - asset: assets/fonts/poppins_b.ttf
+          weight: 700
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/quicksand_r.ttf
+        - asset: assets/fonts/quicksand_b.ttf
+          weight: 700
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/raleway_r.ttf
+        - asset: assets/fonts/raleway_b.ttf
+          weight: 700
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/roboto_r.ttf
+        - asset: assets/fonts/roboto_b.ttf
+          weight: 700
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/rubik_r.ttf
+        - asset: assets/fonts/rubik_b.ttf
+          weight: 700
+    - family: Abril Fatface
+      fonts:
+        - asset: assets/fonts/abrilfatface_r.ttf
+    - family: Alfa Slab One
+      fonts:
+        - asset: assets/fonts/alfaslabone_r.ttf
+    - family: Bitter
+      fonts:
+        - asset: assets/fonts/bitter_r.ttf
+        - asset: assets/fonts/bitter_b.ttf
+          weight: 700
+    - family: Cormorant Garamond
+      fonts:
+        - asset: assets/fonts/cormorantgaramond_r.ttf
+        - asset: assets/fonts/cormorantgaramond_b.ttf
+          weight: 700
+    - family: Crimson Text
+      fonts:
+        - asset: assets/fonts/crimsontext_r.ttf
+        - asset: assets/fonts/crimsontext_b.ttf
+          weight: 700
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/lora_r.ttf
+        - asset: assets/fonts/lora_b.ttf
+          weight: 700
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/playfairdisplay_r.ttf
+        - asset: assets/fonts/playfairdisplay_b.ttf
+          weight: 700
+    - family: PT Serif
+      fonts:
+        - asset: assets/fonts/ptserif_r.ttf
+        - asset: assets/fonts/ptserif_b.ttf
+          weight: 700
+    - family: Source Serif
+      fonts:
+        - asset: assets/fonts/sourceserif4_r.ttf
+        - asset: assets/fonts/sourceserif4_b.ttf
+          weight: 700
+    - family: Archivo Black
+      fonts:
+        - asset: assets/fonts/archivoblack_r.ttf
+    - family: Audiowide
+      fonts:
+        - asset: assets/fonts/audiowide_r.ttf
+    - family: Baloo 2
+      fonts:
+        - asset: assets/fonts/baloo2_r.ttf
+        - asset: assets/fonts/baloo2_b.ttf
+          weight: 700
+    - family: Bangers
+      fonts:
+        - asset: assets/fonts/bangers_r.ttf
+    - family: Bebas Neue
+      fonts:
+        - asset: assets/fonts/bebasneue_r.ttf
+    - family: Black Ops One
+      fonts:
+        - asset: assets/fonts/blackopsone_r.ttf
+    - family: Bungee
+      fonts:
+        - asset: assets/fonts/bungee_r.ttf
+    - family: Exo 2
+      fonts:
+        - asset: assets/fonts/exo2_r.ttf
+        - asset: assets/fonts/exo2_b.ttf
+          weight: 700
+    - family: Fascinate
+      fonts:
+        - asset: assets/fonts/fascinate_r.ttf
+    - family: Fredoka
+      fonts:
+        - asset: assets/fonts/fredoka_r.ttf
+        - asset: assets/fonts/fredoka_b.ttf
+          weight: 700
+    - family: Lobster
+      fonts:
+        - asset: assets/fonts/lobster_r.ttf
+    - family: Monoton
+      fonts:
+        - asset: assets/fonts/monoton_r.ttf
+    - family: Orbitron
+      fonts:
+        - asset: assets/fonts/orbitron_r.ttf
+        - asset: assets/fonts/orbitron_b.ttf
+          weight: 700
+    - family: Oswald
+      fonts:
+        - asset: assets/fonts/oswald_r.ttf
+        - asset: assets/fonts/oswald_b.ttf
+          weight: 700
+    - family: Press Start 2P
+      fonts:
+        - asset: assets/fonts/pressstart2p_r.ttf
+    - family: Rammetto One
+      fonts:
+        - asset: assets/fonts/rammettoone_r.ttf
+    - family: Righteous
+      fonts:
+        - asset: assets/fonts/righteous_r.ttf
+    - family: Russo One
+      fonts:
+        - asset: assets/fonts/russoone_r.ttf
+    - family: Teko
+      fonts:
+        - asset: assets/fonts/teko_r.ttf
+        - asset: assets/fonts/teko_b.ttf
+          weight: 700
+    - family: Titan One
+      fonts:
+        - asset: assets/fonts/titanone_r.ttf
+    - family: Allura
+      fonts:
+        - asset: assets/fonts/allura_r.ttf
+    - family: Amatic SC
+      fonts:
+        - asset: assets/fonts/amaticsc_r.ttf
+        - asset: assets/fonts/amaticsc_b.ttf
+          weight: 700
+    - family: Caveat
+      fonts:
+        - asset: assets/fonts/caveat_r.ttf
+        - asset: assets/fonts/caveat_b.ttf
+          weight: 700
+    - family: Courgette
+      fonts:
+        - asset: assets/fonts/courgette_r.ttf
+    - family: Dancing Script
+      fonts:
+        - asset: assets/fonts/dancingscript_r.ttf
+        - asset: assets/fonts/dancingscript_b.ttf
+          weight: 700
+    - family: Indie Flower
+      fonts:
+        - asset: assets/fonts/indieflower_r.ttf
+    - family: Kaushan Script
+      fonts:
+        - asset: assets/fonts/kaushanscript_r.ttf
+    - family: Marck Script
+      fonts:
+        - asset: assets/fonts/marckscript_r.ttf
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/pacifico_r.ttf
+    - family: Parisienne
+      fonts:
+        - asset: assets/fonts/parisienne_r.ttf
+    - family: Patrick Hand
+      fonts:
+        - asset: assets/fonts/patrickhand_r.ttf
+    - family: Reenie Beanie
+      fonts:
+        - asset: assets/fonts/reeniebeanie_r.ttf
+    - family: Sacramento
+      fonts:
+        - asset: assets/fonts/sacramento_r.ttf
+    - family: Shadows Into Light
+      fonts:
+        - asset: assets/fonts/shadowsintolight_r.ttf
+    - family: Cutive Mono
+      fonts:
+        - asset: assets/fonts/cutivemono_r.ttf
+    - family: Fira Code
+      fonts:
+        - asset: assets/fonts/firacode_r.ttf
+        - asset: assets/fonts/firacode_b.ttf
+          weight: 700
+    - family: Inconsolata
+      fonts:
+        - asset: assets/fonts/inconsolata_r.ttf
+        - asset: assets/fonts/inconsolata_b.ttf
+          weight: 700
+    - family: JetBrains Mono
+      fonts:
+        - asset: assets/fonts/jetbrainsmono_r.ttf
+        - asset: assets/fonts/jetbrainsmono_b.ttf
+          weight: 700
+    - family: Source Code Pro
+      fonts:
+        - asset: assets/fonts/sourcecodepro_r.ttf
+        - asset: assets/fonts/sourcecodepro_b.ttf
+          weight: 700
+    - family: Space Mono
+      fonts:
+        - asset: assets/fonts/spacemono_r.ttf
+        - asset: assets/fonts/spacemono_b.ttf
+          weight: 700
+    - family: VT323
+      fonts:
+        - asset: assets/fonts/vt323_r.ttf

@@ -1,0 +1,30 @@
+group = 'com.kainuwa.encoder'
+version = '1.0'
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace = 'com.kainuwa.encoder'
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 21
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+}
+
+dependencies {
+    implementation 'androidx.media3:media3-common:1.5.1'
+    implementation 'androidx.media3:media3-transformer:1.5.1'
+    implementation 'androidx.media3:media3-effect:1.5.1'
+    implementation 'androidx.media3:media3-exoplayer:1.5.1'
+}

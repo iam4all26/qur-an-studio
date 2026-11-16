@@ -1,0 +1,19 @@
+name: kainuwa_encoder
+description: Local Android plugin for Kainuwa Studio. Picks files and exports video with Media3 Transformer.
+version: 0.0.1
+publish_to: "none"
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.kainuwa.encoder
+        pluginClass: KainuwaEncoderPlugin
