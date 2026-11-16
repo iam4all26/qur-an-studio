@@ -17,6 +17,7 @@ List<Layer> buildVerseLayers({
   required int durationMs,
   required QTemplate look,
   required String fontFamily,
+  String? footer,
 }) {
   final aWords = arabic.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final tWords = translation.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
@@ -62,17 +63,20 @@ List<Layer> buildVerseLayers({
     const gap = 0.04;
     final hA = arLayer.h;
     final hT = trLayer?.h ?? 0.0;
+    final lo = 0.05;
+    final hi = footer == null ? 0.95 : 0.87;
+    final maxTotal = hi - lo;
     var total = hA + (trLayer == null ? 0 : gap + hT);
-    if (total > 0.88) {
-      final f = 0.88 / total;
+    if (total > maxTotal) {
+      final f = maxTotal / total;
       for (final l in [arLayer, if (trLayer != null) trLayer]) {
         l.w = l.w * f;
         l.h = l.h * f;
       }
-      total = 0.88;
+      total = maxTotal;
     }
     final aH = arLayer.h;
-    final top = (1 - total) / 2;
+    final top = (lo + hi) / 2 - total / 2;
     arLayer.cy = top + aH / 2;
     if (trLayer != null) trLayer.cy = top + aH + gap + trLayer.h / 2;
 
@@ -82,6 +86,20 @@ List<Layer> buildVerseLayers({
       if (pages > 1) l.animIn = 'fade';
       layers.add(l);
     }
+  }
+  if (footer != null && footer.isNotEmpty) {
+    final fl = Layer(
+      id: newId(),
+      type: 'text',
+      text: footer,
+      cy: 0.93,
+      color: look.translationColor,
+      bold: false,
+      lineHeight: 1.2,
+    );
+    _fit(fl, (tall ? look.translationTall : look.translationWide) * 0.8, 0.8);
+    fl.cy = 0.93;
+    layers.add(fl);
   }
   return layers;
 }

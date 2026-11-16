@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -30,7 +31,8 @@ const String _family = 'Amiri Quran';
 const List<String> _steps = ['Details', 'Verses', 'Translation', 'Reciter', 'Template'];
 
 class _Item {
-  _Item(this.arabic, this.translation, this.audioCode);
+  _Item(this.arabic, this.translation, this.audioCode, [this.label = '']);
+  final String label;
   final String arabic;
   final String translation;
   final String audioCode;
@@ -55,6 +57,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   int _shape = 0; // 0 = 9:16, 1 = 16:9, 2 = 1:1
   VerseSelection? _sel;
   bool _withTr = true;
+  bool _footer = true;
   String _lang = 'en_sahih';
   List<_Rec> _recs = [];
   int _rec = 0;
@@ -191,6 +194,37 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     }
   }
 
+  /// Start and end (ms) of the audible part of a recording: silence at both ends is cut so
+  /// verses follow each other without a gap.
+  Future<(int, int)> _trim(String path, int total) async {
+    if (total <= 0) return (0, 6000);
+    try {
+      final peaks = await KainuwaEncoder.audioPeaks(path, bins: 200);
+      if (peaks.isEmpty) return (0, total);
+      var top = 0.0;
+      for (final p in peaks) {
+        if (p > top) top = p;
+      }
+      if (top <= 0) return (0, total);
+      final limit = top * 0.08;
+      var first = 0;
+      while (first < peaks.length - 1 && peaks[first] < limit) {
+        first++;
+      }
+      var last = peaks.length - 1;
+      while (last > first && peaks[last] < limit) {
+        last--;
+      }
+      final bin = total / peaks.length;
+      final start = math.max(0, (first * bin).round() - 40);
+      final end = math.min(total, ((last + 1) * bin).round() + 60);
+      if (end - start < 300) return (0, total);
+      return (start, end);
+    } catch (_) {
+      return (0, total);
+    }
+  }
+
   String _code(int s, int a) => '${s.toString().padLeft(3, '0')}${a.toString().padLeft(3, '0')}';
 
   Future<void> _create() async {
@@ -231,7 +265,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         items.add(_Item(await db.basmala(), tr == null ? '' : tr[0], _code(1, 1)));
       }
       for (final v in rows) {
-        items.add(_Item(v.text, trOf(surahNo, v.ayah, offset), _code(surahNo, v.ayah)));
+        items.add(_Item(v.text, trOf(surahNo, v.ayah, offset), _code(surahNo, v.ayah),
+            '${sel.surah.nameEn} - $surahNo:${v.ayah}'));
       }
 
       final rec = _recs[_rec];
@@ -242,6 +277,11 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         final p = await _audio(rec, items[i].audioCode);
         paths.add(p);
         durations.add(await KainuwaEncoder.audioDuration(p));
+      }
+
+      final trims = <(int, int)>[];
+      for (var i = 0; i < items.length; i++) {
+        trims.add(await _trim(paths[i], durations[i]));
       }
 
       if (mounted) setState(() => _status = 'Building scenes...');
@@ -255,9 +295,10 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       stageUsed = true;
       final tall = ah > aw;
       final look = _tpls[_look];
+      var pos = 0;
       for (var i = 0; i < items.length; i++) {
         final it = items[i];
-        final dur = (durations[i] > 0 ? durations[i] : 6000) + 800;
+        final dur = trims[i].$2 - trims[i].$1;
         final layers = buildVerseLayers(
           arabic: it.arabic,
           translation: it.translation,
@@ -265,17 +306,28 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           durationMs: dur,
           look: look,
           fontFamily: fontOk ? _family : '',
+          footer: _footer && it.label.isNotEmpty ? it.label : null,
         );
         lesson.scenes.add(Scene(
           id: newId(),
           durationMs: dur,
           bgType: 'asset',
           bgValue: look.assetFor(aw, ah),
-          narrationPath: paths[i],
-          narrationMs: durations[i],
-          narrationClean: false,
           layers: layers,
         ));
+        if (durations[i] > 0) {
+          lesson.audioClips.add(AudioClip(
+            id: newId(),
+            path: paths[i],
+            label: 'Verse',
+            kind: 'voice',
+            startMs: pos,
+            trimMs: trims[i].$1,
+            durationMs: dur,
+            sourceMs: durations[i],
+          ));
+        }
+        pos += dur;
       }
       await state.persist();
       Stage.reset();
@@ -513,6 +565,13 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   List<Widget> _template() {
     if (_tpls.isEmpty) return [const Center(child: CircularProgressIndicator())];
     return [
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Show surah and verse at the bottom'),
+        value: _footer,
+        onChanged: (v) => setState(() => _footer = v),
+      ),
+      const SizedBox(height: 8),
       GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),

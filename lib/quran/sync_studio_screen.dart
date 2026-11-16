@@ -47,6 +47,7 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
   int _total = 0;
   int _shape = 0;
   String _tr = 'none'; // none | en_sahih | ha_gumi
+  bool _footer = true;
   List<QTemplate> _tpls = [];
   int _look = 0;
   bool _busy = false;
@@ -376,6 +377,7 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
           durationMs: _b[i + 1] - _b[i],
           look: look,
           fontFamily: fontOk ? _family : '',
+          footer: _footer ? '${sel.surah.nameEn} - ${sel.surah.number}:${v.ayah}' : null,
         );
         lesson.scenes.add(Scene(
           id: newId(),
@@ -490,6 +492,12 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
                 onSelected: (_) => setState(() => _tr = e.$1),
               ),
           ],
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Show surah and verse at the bottom'),
+          value: _footer,
+          onChanged: (v) => setState(() => _footer = v),
         ),
         _label('Template'),
         if (_tpls.isEmpty)
