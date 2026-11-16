@@ -11,7 +11,7 @@ class QuranHubScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Qur'an Studio")),
+      appBar: AppBar(title: const Text('Library')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
