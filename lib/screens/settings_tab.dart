@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../quran/about_screen.dart';
+
 import '../app_state.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -272,8 +274,16 @@ class _SettingsTabState extends State<SettingsTab> {
           _card(
             key: _keys[3],
             icon: Icons.info_outline,
-            title: 'About Kainuwa Studio',
-            child: const Text('Version 1.0.0. Works offline. Projects stay on this phone.'),
+            title: "About Qur'an Studio",
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Version 1.0.0. Works offline. Projects stay on this phone.'),
+              subtitle: const Text('Credits and licences'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+              ),
+            ),
           ),
           if (state.loadError != null)
             Padding(

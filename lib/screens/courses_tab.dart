@@ -385,7 +385,7 @@ class CoursesTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Kainuwa Studio', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+                    Text('Qur\'an Studio', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
                     Text('Make videos, even offline',
                         style: TextStyle(fontSize: 12.5, color: Color(0xFFB5ABD6))),
                   ],

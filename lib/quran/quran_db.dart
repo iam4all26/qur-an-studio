@@ -23,20 +23,23 @@ class VerseRow {
 /// Only the invisible byte order mark (U+FEFF) is removed, because it is not
 /// part of the text.
 class QuranDb {
-  QuranDb._(this._db);
+  QuranDb._(this._db, this._hash);
   final Database _db;
+  final String? _hash;
   static QuranDb? _instance;
 
   static String _clean(String s) => s.replaceAll('\uFEFF', '');
 
   static Future<QuranDb?> open() async {
-    final existing = _instance;
-    if (existing != null) return existing;
     final rm = ResourceManager.instance;
+    final existing = _instance;
+    // Reopen when a newer quran.db has been downloaded since it was opened.
+    if (existing != null && existing._hash == rm.installedHash('quran')) return existing;
+    await close();
     final entry = rm.byId('quran');
     if (entry == null || !rm.isReady('quran')) return null;
     final db = await openDatabase(await rm.pathOf(entry), readOnly: true);
-    _instance = QuranDb._(db);
+    _instance = QuranDb._(db, rm.installedHash('quran'));
     return _instance;
   }
 
@@ -95,6 +98,17 @@ class QuranDb {
         'SELECT s.number FROM surahs s WHERE s.ayah_count != '
         '(SELECT COUNT(*) FROM verses x WHERE x.surah = s.number)');
     if (bad.isNotEmpty) return 'Verse count mismatch in surah ${bad.first['number']}';
+    // The Basmala must be stored once, not glued to the first verse of a surah.
+    final bas = (await basmala()).split(' ');
+    final firsts = await _db.query('verses',
+        where: 'ayah = 1 AND surah NOT IN (1, 9)', orderBy: 'surah');
+    for (final r in firsts) {
+      final words = _clean(r['text'] as String).split(' ');
+      if (words.length >= bas.length && words.take(bas.length).join(' ') == bas.join(' ')) {
+        return 'The Basmala is attached to verse 1 of surah ${r['surah']}. '
+            'Run the data build again and update the Qur\'an text.';
+      }
+    }
     return null;
   }
 }

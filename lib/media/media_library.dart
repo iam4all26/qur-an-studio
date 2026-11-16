@@ -486,7 +486,7 @@ class _MediaLibraryScreenState extends State<MediaLibraryScreen> with WidgetsBin
       body = const Center(child: CircularProgressIndicator());
     } else if (!_allowed) {
       body = _message(
-        'Allow access to your media so Kainuwa Studio can show your files here.',
+        'Allow access to your media so Qur\'an Studio can show your files here.',
         settings: true,
       );
     } else if (_assets.isEmpty && !_loading && !_hasMore) {

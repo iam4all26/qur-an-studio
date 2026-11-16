@@ -121,6 +121,9 @@ class ResourceManager extends ChangeNotifier {
     return false;
   }
 
+  /// SHA-256 of the installed copy of a resource, or null when not installed.
+  String? installedHash(String id) => _installed[id];
+
   ResourceEntry? byId(String id) {
     for (final e in catalog) {
       if (e.id == id) return e;

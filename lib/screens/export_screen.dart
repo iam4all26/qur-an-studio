@@ -1446,7 +1446,7 @@ class _ExportScreenState extends State<ExportScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text('Kainuwa Studio', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    const Text('Qur\'an Studio', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                   ],
                 ),
                 actions: [

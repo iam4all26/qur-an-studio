@@ -78,7 +78,7 @@ class ProjectPackage {
     try {
       final magic = await raf.read(8);
       if (utf8.decode(magic, allowMalformed: true) != _magic) {
-        throw const FormatException('This is not a Kainuwa Studio project file.');
+        throw const FormatException('This is not a Qur\'an Studio project file.');
       }
       final lenBytes = await raf.read(8);
       final headerLen = ByteData.sublistView(Uint8List.fromList(lenBytes)).getInt64(0);
