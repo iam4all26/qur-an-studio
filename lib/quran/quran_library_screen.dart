@@ -7,7 +7,10 @@ import 'resources_screen.dart';
 import 'verse_select_screen.dart';
 
 class QuranLibraryScreen extends StatefulWidget {
-  const QuranLibraryScreen({super.key});
+  const QuranLibraryScreen({super.key, this.pick = false});
+
+  /// When true the chosen verses are returned to the caller instead of shown.
+  final bool pick;
 
   @override
   State<QuranLibraryScreen> createState() => _QuranLibraryScreenState();
@@ -56,13 +59,16 @@ class _QuranLibraryScreenState extends State<QuranLibraryScreen> {
       MaterialPageRoute(builder: (_) => VerseSelectScreen(surah: s)),
     );
     if (sel == null || !mounted) return;
+    if (widget.pick) {
+      Navigator.of(context).pop(sel);
+      return;
+    }
     await showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Selection ready'),
         content: Text(
-          '${s.nameEn}: ${sel.label}.\n\nThe project wizard that uses this '
-          'selection arrives in the next batch.',
+          '${s.nameEn}: ${sel.label}.\n\nTo make a video from it, use Create New Project on Home.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK')),

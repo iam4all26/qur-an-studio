@@ -73,6 +73,14 @@ class QuranDb {
     ];
   }
 
+  /// Number of verses in all earlier surahs. Translation files are one flat
+  /// list in Qur'an order, so verse (surah, ayah) sits at offsetOf(surah) + ayah - 1.
+  Future<int> offsetOf(int surah) async {
+    final n = Sqflite.firstIntValue(
+        await _db.rawQuery('SELECT COUNT(*) FROM verses WHERE surah < ?', [surah]));
+    return n ?? 0;
+  }
+
   Future<String> basmala() async {
     final rows = await _db.query('meta', where: 'key = ?', whereArgs: ['basmala']);
     return rows.isEmpty ? '' : _clean(rows.first['value'] as String);

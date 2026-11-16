@@ -4,7 +4,7 @@ import '../app_state.dart';
 import '../models.dart';
 import '../screens/lesson_editor_screen.dart';
 import '../theme.dart';
-import 'phase0_screen.dart';
+import 'new_project_wizard.dart';
 import 'resource_manager.dart';
 import 'resources_screen.dart';
 
@@ -94,7 +94,7 @@ class HomeDashboard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const Phase0Screen()),
+        MaterialPageRoute<void>(builder: (_) => const NewProjectWizard()),
       ),
       child: Ink(
         padding: const EdgeInsets.all(18),
