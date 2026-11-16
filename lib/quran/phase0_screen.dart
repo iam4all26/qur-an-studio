@@ -1,3 +1,4 @@
+import 'dart:ui' show FontLoader;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
