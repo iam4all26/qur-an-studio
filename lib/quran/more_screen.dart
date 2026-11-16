@@ -1,3 +1,4 @@
+import 'backgrounds_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
@@ -51,6 +52,8 @@ class MoreScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _nav(context, Icons.cloud_download_outlined, 'Resources',
               "Qur'an text, translations, reciter list and font", const ResourcesScreen()),
+          _nav(context, Icons.movie_outlined, 'Video backgrounds', 'Moving backgrounds for your videos',
+              const BackgroundsScreen()),
           _nav(context, Icons.mic_none, 'Reciters', 'Favorites, downloads and your own audio',
               const RecitersScreen()),
           _nav(context, Icons.info_outline, 'About and credits', 'Sources and licences',

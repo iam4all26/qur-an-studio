@@ -16,6 +16,7 @@ import 'quran_db.dart';
 import 'quran_library_screen.dart';
 import 'resource_manager.dart';
 import 'templates.dart';
+import 'background_choice.dart';
 import 'verse_layers.dart';
 import 'verse_select_screen.dart';
 
@@ -58,6 +59,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   VerseSelection? _sel;
   bool _withTr = true;
   bool _footer = true;
+  BgChoice _bg = BgChoice();
   String _lang = 'en_sahih';
   List<_Rec> _recs = [];
   int _rec = 0;
@@ -285,6 +287,9 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       }
 
       if (mounted) setState(() => _status = 'Building scenes...');
+      final plan = await BackgroundPlan.create(_bg);
+      final bgProblem = plan.problem;
+      if (bgProblem != null) throw StateError(bgProblem);
       final state = AppScope.read(context);
       final (aw, ah) = _shapes[_shape];
       final ids = await state.addVideo(title: _name.text.trim(), aspectW: aw, aspectH: ah);
@@ -308,13 +313,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           fontFamily: fontOk ? _family : '',
           footer: _footer && it.label.isNotEmpty ? it.label : null,
         );
-        lesson.scenes.add(Scene(
-          id: newId(),
-          durationMs: dur,
-          bgType: 'asset',
-          bgValue: look.assetFor(aw, ah),
-          layers: layers,
-        ));
+        lesson.scenes.addAll(plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah)));
         if (durations[i] > 0) {
           lesson.audioClips.add(AudioClip(
             id: newId(),
@@ -571,6 +570,13 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         value: _footer,
         onChanged: (v) => setState(() => _footer = v),
       ),
+      const Padding(
+        padding: EdgeInsets.only(top: 6, bottom: 6),
+        child: Text('Background', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
+      ),
+      BackgroundChooser(choice: _bg, onChanged: (c) => setState(() => _bg = c)),
+      const SizedBox(height: 12),
+      const Text('Template', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
       const SizedBox(height: 8),
       GridView.builder(
         shrinkWrap: true,

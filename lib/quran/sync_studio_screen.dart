@@ -17,6 +17,7 @@ import 'quran_library_screen.dart';
 import 'resource_manager.dart';
 import 'templates.dart';
 import 'verse_select_screen.dart';
+import 'background_choice.dart';
 import 'verse_layers.dart';
 
 const String _family = 'Amiri Quran';
@@ -48,6 +49,7 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
   int _shape = 0;
   String _tr = 'none'; // none | en_sahih | ha_gumi
   bool _footer = true;
+  BgChoice _bg = BgChoice();
   List<QTemplate> _tpls = [];
   int _look = 0;
   bool _busy = false;
@@ -339,6 +341,9 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
     var stageUsed = false;
     try {
       final sel = _selection!;
+      final plan = await BackgroundPlan.create(_bg);
+      final bgProblem = plan.problem;
+      if (bgProblem != null) throw StateError(bgProblem);
       final db = await QuranDb.open();
       if (db == null) throw StateError('The Qur\'an data is not downloaded.');
       await rm.loadFonts();
@@ -379,12 +384,10 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
           fontFamily: fontOk ? _family : '',
           footer: _footer ? '${sel.surah.nameEn} - ${sel.surah.number}:${v.ayah}' : null,
         );
-        lesson.scenes.add(Scene(
-          id: newId(),
+        lesson.scenes.addAll(plan.scenesFor(
           durationMs: _b[i + 1] - _b[i],
-          bgType: 'asset',
-          bgValue: look.assetFor(aw, ah),
           layers: layers,
+          imageAsset: look.assetFor(aw, ah),
         ));
       }
       lesson.audioClips.add(AudioClip(
@@ -499,6 +502,8 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
           value: _footer,
           onChanged: (v) => setState(() => _footer = v),
         ),
+        _label('Background'),
+        BackgroundChooser(choice: _bg, onChanged: (c) => setState(() => _bg = c)),
         _label('Template'),
         if (_tpls.isEmpty)
           const Text('Loading templates...')
