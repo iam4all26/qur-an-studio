@@ -75,7 +75,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
   bool _sceneSelected = false;
   String? _soundSel; // 'music' or 'narration:<scene index>'
   int _tab = -1;
-  final List<String> _order = List<String>.of(kDefaultTrackOrder);
+  final List<String> _order = List<String>.of(kDefaultTrackOrder)..remove('video');
 
   @override
   void initState() {
@@ -1908,7 +1908,6 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
             ),
             _headerIcon(u, Icons.undo, (history?.canUndo ?? false) ? _undo : null, tooltip: 'Undo'),
             _headerIcon(u, Icons.redo, (history?.canRedo ?? false) ? _redo : null, tooltip: 'Redo'),
-            _headerIcon(u, Icons.storefront_outlined, _openStore, tooltip: 'Store'),
             _headerIcon(u, Icons.save_outlined, _save, tooltip: 'Save'),
             SizedBox(width: _s(u, 12, 4)),
             Material(
@@ -2487,11 +2486,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     final layer = _selectedLayer(scene);
     if (_selectedAudioId != null) {
       tools.addAll([
-        (Icons.content_cut, 'Split', _split),
-        (Icons.copy_all_outlined, 'Duplicate', _duplicateSelection),
         (Icons.volume_up_outlined, 'Volume', _volume),
-        (Icons.speed, 'Speed', _audioSettings),
-        (Icons.swap_horiz, 'Replace', _replaceMedia),
         (Icons.delete_outline, 'Delete', _deleteSelection),
       ]);
     } else if (_soundSel != null) {
@@ -2502,32 +2497,20 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
       ]);
     } else if (layer != null) {
       tools.addAll([
-        (Icons.content_cut, 'Split', _split),
-        (Icons.copy_all_outlined, 'Duplicate', _duplicateSelection),
-        (Icons.content_copy, 'Copy', _copyLayer),
-        if (_clipLayer != null) (Icons.content_paste, 'Paste', _pasteLayer),
         (Icons.open_with, 'Pos & size', _positionSheet),
         (Icons.layers_outlined, 'Layer', _openLayers),
         (Icons.tune, 'Adjust', _adjust),
         (Icons.auto_awesome_outlined, 'Animate', _openAnimate),
-        (Icons.speed, 'Speed', _speed),
-        if (layer.type == 'image' || layer.type == 'shape') (Icons.swap_horiz, 'Replace', _replaceMedia),
         (Icons.delete_outline, 'Delete', _deleteSelection),
       ]);
     } else if (_sceneSelected && scene != null && scene.hasVideo) {
       tools.addAll([
-        (Icons.content_cut, 'Split', _split),
-        (Icons.copy_all_outlined, 'Duplicate', _duplicateSelection),
         (Icons.videocam_outlined, 'Video', _videoSettings),
-        (Icons.swap_horiz, 'Replace', _replaceMedia),
         (Icons.compare_arrows, 'Transition', _transitionSheet),
         (Icons.delete_outline, 'Delete', _deleteSelection),
       ]);
     } else if (_sceneSelected) {
       tools.addAll([
-        (Icons.content_cut, 'Split', _split),
-        (Icons.copy_all_outlined, 'Duplicate', _duplicateSelection),
-        (Icons.volume_up_outlined, 'Volume', _volume),
         (Icons.compare_arrows, 'Transition', _transitionSheet),
         (Icons.delete_outline, 'Delete', _deleteSelection),
       ]);
@@ -2583,7 +2566,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
         await _setBackground();
         break;
       case 1:
-        await _openAdd();
+        await _addText();
         break;
       case 2:
         await _openSound();
@@ -2605,16 +2588,9 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     final bottom = MediaQuery.of(context).padding.bottom;
     final items = <(IconData, String)>[
       (Icons.wallpaper, 'Background'),
-      (Icons.add_box_outlined, 'Add'),
+      (Icons.text_fields, 'Text'),
       (Icons.mic_none, 'Sound'),
       (Icons.timer_outlined, 'Time'),
-      (Icons.aspect_ratio, 'Shape'),
-      (
-        MediaQuery.of(context).orientation == Orientation.landscape
-            ? Icons.stay_current_portrait
-            : Icons.stay_current_landscape,
-        'Rotate',
-      ),
     ];
     return Container(
       padding: EdgeInsets.fromLTRB(_s(u, 12, 4), _s(u, 14, 4), _s(u, 12, 4), _s(u, 12, 4) + bottom),
@@ -2676,16 +2652,9 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
   Widget _landscapeRail(double u, EdgeInsets pad) {
     final items = <(IconData, String)>[
       (Icons.wallpaper, 'Background'),
-      (Icons.add_box_outlined, 'Add'),
+      (Icons.text_fields, 'Text'),
       (Icons.mic_none, 'Sound'),
       (Icons.timer_outlined, 'Time'),
-      (Icons.aspect_ratio, 'Shape'),
-      (
-        MediaQuery.of(context).orientation == Orientation.landscape
-            ? Icons.stay_current_portrait
-            : Icons.stay_current_landscape,
-        'Rotate',
-      ),
     ];
     return Container(
       width: 64 + pad.left,

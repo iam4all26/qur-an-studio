@@ -15,6 +15,7 @@ import 'quran_db.dart';
 import 'quran_library_screen.dart';
 import 'resource_manager.dart';
 import 'templates.dart';
+import 'verse_layers.dart';
 import 'verse_select_screen.dart';
 
 class _Rec {
@@ -256,37 +257,18 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       final look = _tpls[_look];
       for (var i = 0; i < items.length; i++) {
         final it = items[i];
-        final hasTr = it.translation.isNotEmpty;
-        final arText = _wrap(it.arabic, tall ? 4 : 8);
-        final arLayer = Layer(
-          id: newId(),
-          type: 'text',
-          text: arText,
-          cy: hasTr ? 0.38 : 0.5,
-          color: look.arabicColor,
-          bold: false,
-          lineHeight: 1.7,
+        final dur = (durations[i] > 0 ? durations[i] : 6000) + 800;
+        final layers = buildVerseLayers(
+          arabic: it.arabic,
+          translation: it.translation,
+          tall: tall,
+          durationMs: dur,
+          look: look,
           fontFamily: fontOk ? _family : '',
         );
-        _fit(arLayer, (tall ? look.arabicTall : look.arabicWide) * _scale(_lineCount(arText), tall ? 7 : 5), 0.9);
-        final layers = <Layer>[arLayer];
-        if (hasTr) {
-          final trText = _wrap(it.translation, tall ? 5 : 11);
-          final trLayer = Layer(
-            id: newId(),
-            type: 'text',
-            text: trText,
-            cy: 0.72,
-            color: look.translationColor,
-            bold: false,
-            lineHeight: 1.3,
-          );
-          _fit(trLayer, (tall ? look.translationTall : look.translationWide) * _scale(_lineCount(trText), tall ? 8 : 4), 0.88);
-          layers.add(trLayer);
-        }
         lesson.scenes.add(Scene(
           id: newId(),
-          durationMs: (durations[i] > 0 ? durations[i] : 6000) + 800,
+          durationMs: dur,
           bgType: 'asset',
           bgValue: look.assetFor(aw, ah),
           narrationPath: paths[i],

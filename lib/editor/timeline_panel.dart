@@ -1026,33 +1026,7 @@ class _TimelinePanelState extends State<TimelinePanel> {
           labels.add(SizedBox(height: rowGap));
         }
         labels.add(SizedBox(height: 12 * u));
-        labels.add(
-          GestureDetector(
-            onTap: widget.onAddTrack,
-            child: CustomPaint(
-              painter: _DashedBorderPainter(color: const Color(0xFF6F63A6), radius: math.max(8.0, 16 * u)),
-              child: SizedBox(
-                width: math.max(labelW - 6 * u, 80),
-                height: addH,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add, size: math.max(16.0, 34 * u), color: KColors.ink),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Add Track',
-                      style: TextStyle(
-                        fontSize: math.max(10.5, 25 * u),
-                        fontWeight: FontWeight.w500,
-                        color: KColors.ink,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+        labels.add(SizedBox(height: addH));
 
         // ---- fixed menu icons at the right edge of every row ----
         final menus = <Widget>[];

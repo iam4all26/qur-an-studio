@@ -362,7 +362,6 @@ class _EditPanelState extends State<_EditPanel> {
   List<(String, String, IconData)> get _tabs => [
         if (_isText) ('content', 'Content', Icons.edit_outlined),
         ('style', 'Style', Icons.palette_outlined),
-        if (l.type == 'image' || l.type == 'asset') ('crop', 'Crop', Icons.crop),
         ('transform', 'Transform', Icons.open_with),
         ('arrange', 'Arrange', Icons.layers_outlined),
         ('animation', 'Animation', Icons.auto_awesome_outlined),
@@ -1465,7 +1464,6 @@ class _EditPanelState extends State<_EditPanel> {
       ('in', 'In', Icons.login),
       ('overall', 'Overall', Icons.autorenew),
       ('out', 'Out', Icons.logout),
-      ('hand', 'Hand', Icons.pan_tool_outlined),
       if (_isText) ('text', 'Text', Icons.text_fields),
       ('time', 'Timing', Icons.timer_outlined),
     ];
