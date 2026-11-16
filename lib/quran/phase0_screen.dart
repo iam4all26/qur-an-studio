@@ -1,4 +1,4 @@
-import 'dart:ui' show FontLoader;
+import 'package:flutter/services.dart' show FontLoader;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
