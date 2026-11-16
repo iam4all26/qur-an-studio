@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'phase0_screen.dart';
+import 'quran_library_screen.dart';
 import 'resources_screen.dart';
 
 /// Temporary tab that holds the Qur'an tools until the Phase 1 home screen
@@ -15,6 +16,17 @@ class QuranHubScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.menu_book_outlined),
+              title: const Text("Qur'an"),
+              subtitle: const Text('Browse 114 surahs and choose verses'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const QuranLibraryScreen()),
+              ),
+            ),
+          ),
           Card(
             child: ListTile(
               leading: const Icon(Icons.cloud_download_outlined),
