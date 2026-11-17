@@ -79,7 +79,7 @@ class _VerseSelectScreenState extends State<VerseSelectScreen> {
     if (_selected.isEmpty) return 'No verses selected';
     final list = _selected.toList()..sort();
     final n = list.length;
-    return '$n ${n == 1 ? 'verse' : 'verses'} selected (${list.first} - ${list.last})';
+    return '$n ${n == 1 ? 'verse' : 'verses'} selected (${list.first} \u2013 ${list.last})';
   }
 
   void _next() {
@@ -91,42 +91,80 @@ class _VerseSelectScreenState extends State<VerseSelectScreen> {
   Widget build(BuildContext context) {
     final s = widget.surah;
     return Scaffold(
-      appBar: AppBar(title: Text('${s.nameEn} (${s.number})')),
+      appBar: AppBar(centerTitle: true, title: Text('${s.nameEn} (${s.number})')),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: Row(
-              children: [
-                _tab('Select Verses', !_byRange, () => setState(() => _byRange = false)),
-                const SizedBox(width: 8),
-                _tab('By Range', _byRange, () => setState(() => _byRange = true)),
-              ],
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: KColors.lavender,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  _tab('Select Verses', !_byRange, () => setState(() => _byRange = false)),
+                  _tab('By Range', _byRange, () => setState(() => _byRange = true)),
+                ],
+              ),
             ),
           ),
           if (_byRange) _rangeBox() else _quickRow(),
           Expanded(child: _list()),
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-            decoration: const BoxDecoration(
-              color: KColors.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF6F4FB),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
                 children: [
-                  Text(_summary, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _selected.isEmpty ? null : _next,
-                      child: const Text('Next'),
+                  Icon(
+                    Icons.check_circle,
+                    size: 20,
+                    color: _selected.isEmpty ? const Color(0xFFB5B1C9) : KColors.selected,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _summary,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: Color(0xFF1B1633),
+                      ),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: KColors.selected,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: _selected.isEmpty ? null : _next,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Next', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, size: 18),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -141,13 +179,13 @@ class _VerseSelectScreenState extends State<VerseSelectScreen> {
         borderRadius: BorderRadius.circular(12),
         onTap: tap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: on ? KColors.selected : KColors.surface,
-            borderRadius: BorderRadius.circular(12),
+            color: on ? KColors.selected : Colors.transparent,
+            borderRadius: BorderRadius.circular(11),
           ),
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+          child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
         ),
       ),
     );
@@ -208,35 +246,56 @@ class _VerseSelectScreenState extends State<VerseSelectScreen> {
         final v = verses[i];
         final on = _selected.contains(v.ayah);
         return InkWell(
+          borderRadius: BorderRadius.circular(16),
           onTap: () => setState(() {
             on ? _selected.remove(v.ayah) : _selected.add(v.ayah);
           }),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
             decoration: BoxDecoration(
-              color: on ? KColors.selected.withValues(alpha: 0.25) : KColors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: on ? KColors.selected : Colors.transparent),
+              color: const Color(0xFFF6F4FB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: on ? KColors.selected : Colors.transparent, width: 1.5),
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: KColors.lavender,
-                  child: Text('${v.ayah}', style: const TextStyle(fontSize: 12)),
+                Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE6DFFB),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Text(
+                    '${v.ayah}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1B1633),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     v.text,
                     textDirection: TextDirection.rtl,
-                    style: const TextStyle(fontFamily: 'Amiri Quran', fontSize: 22, height: 1.9),
+                    style: const TextStyle(
+                      fontFamily: 'Amiri Quran',
+                      fontSize: 22,
+                      height: 1.9,
+                      color: Color(0xFF1B1633),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
                 Checkbox(
                   value: on,
+                  activeColor: KColors.selected,
+                  checkColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF9A95B5), width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                   onChanged: (_) => setState(() {
                     on ? _selected.remove(v.ayah) : _selected.add(v.ayah);
                   }),
