@@ -8,7 +8,8 @@ import '../theme.dart';
 import 'resource_manager.dart';
 
 class _R {
-  _R(this.id, this.name, this.folder);
+  _R(this.id, this.name, this.folder, [this.country = '']);
+  final String country;
   final String id;
   final String name;
   final String folder;
@@ -55,7 +56,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
     if (e != null && rm.isReady('reciters')) {
       final j = jsonDecode(await File(await rm.pathOf(e)).readAsString()) as Map<String, dynamic>;
       for (final r in (j['reciters'] as List)) {
-        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}'));
+        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}', '${r['country'] ?? ''}'));
       }
     }
     final fav = File('$_root/favorites.json');
@@ -299,9 +300,11 @@ class _RecitersScreenState extends State<RecitersScreen> {
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: dark),
                 ),
                 Text(
-                  r.downloaded > 0
-                      ? "Complete Qur'an  \u2022  ${r.downloaded} verses on this phone"
-                      : "Complete Qur'an",
+                  [
+                    "Complete Qur'an",
+                    if (r.country.isNotEmpty) r.country,
+                    if (r.downloaded > 0) '${r.downloaded} verses on this phone',
+                  ].join('  \u2022  '),
                   style: const TextStyle(fontSize: 12, color: Color(0xFF6B6785)),
                 ),
               ],

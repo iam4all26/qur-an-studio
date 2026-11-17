@@ -52,10 +52,10 @@ ThemeData buildTheme() {
     onPrimaryContainer: KColors.accent,
   );
 
-  return ThemeData(
+  final base = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    fontFamily: 'Inter',
+    fontFamily: 'Manrope',
     colorScheme: scheme,
     scaffoldBackgroundColor: KColors.background,
     canvasColor: KColors.surface,
@@ -73,7 +73,7 @@ ThemeData buildTheme() {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+      titleTextStyle: TextStyle(fontFamily: 'Manrope', fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
       systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
 
@@ -89,13 +89,13 @@ ThemeData buildTheme() {
       backgroundColor: const Color(0xFF1E1938),
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      titleTextStyle: const TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+      titleTextStyle: const TextStyle(fontFamily: 'Manrope', fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
     ),
 
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: const Color(0xFF2E2653),
-      contentTextStyle: const TextStyle(fontFamily: 'Inter', color: Colors.white, fontWeight: FontWeight.w500),
+      contentTextStyle: const TextStyle(fontFamily: 'Manrope', color: Colors.white, fontWeight: FontWeight.w500),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
 
@@ -231,6 +231,33 @@ ThemeData buildTheme() {
           vertical: 14,
         ),
       ),
+    ),
+  );
+
+  // Manrope is a variable font (weight axis 200 to 800): light for body text, strong for titles.
+  TextStyle w(TextStyle? s, double weight) => (s ?? const TextStyle()).copyWith(
+        fontFamily: 'Manrope',
+        fontWeight: FontWeight.values[((weight / 100).round() - 1).clamp(0, 8)],
+        fontVariations: [FontVariation('wght', weight)],
+      );
+  final t = base.textTheme;
+  return base.copyWith(
+    textTheme: t.copyWith(
+      displayLarge: w(t.displayLarge, 600),
+      displayMedium: w(t.displayMedium, 600),
+      displaySmall: w(t.displaySmall, 600),
+      headlineLarge: w(t.headlineLarge, 700),
+      headlineMedium: w(t.headlineMedium, 700),
+      headlineSmall: w(t.headlineSmall, 700),
+      titleLarge: w(t.titleLarge, 700),
+      titleMedium: w(t.titleMedium, 600),
+      titleSmall: w(t.titleSmall, 600),
+      bodyLarge: w(t.bodyLarge, 300),
+      bodyMedium: w(t.bodyMedium, 300),
+      bodySmall: w(t.bodySmall, 300),
+      labelLarge: w(t.labelLarge, 600),
+      labelMedium: w(t.labelMedium, 500),
+      labelSmall: w(t.labelSmall, 500),
     ),
   );
 }

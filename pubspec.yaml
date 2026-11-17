@@ -26,6 +26,9 @@ flutter:
     - assets/templates/
     - assets/templates/bg/
   fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf
     - family: Inter
       fonts:
         - asset: assets/fonts/inter_r.otf
