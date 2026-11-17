@@ -14,6 +14,7 @@ import '../stage_shape.dart';
 import '../theme.dart';
 import 'quran_db.dart';
 import 'quran_library_screen.dart';
+import 'reciter_media.dart';
 import 'resource_manager.dart';
 import 'templates.dart';
 import 'background_choice.dart';
@@ -21,7 +22,9 @@ import 'verse_layers.dart';
 import 'verse_select_screen.dart';
 
 class _Rec {
-  const _Rec(this.id, this.name, this.folder, this.urlTemplate);
+  const _Rec(this.id, this.name, this.folder, this.urlTemplate, [this.country = '', this.image = '']);
+  final String country;
+  final String image;
   final String id;
   final String name;
   final String folder;
@@ -83,6 +86,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
 
   @override
   void dispose() {
+    ReciterPreview.stop();
     _name.dispose();
     super.dispose();
   }
@@ -106,7 +110,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       final list = <_Rec>[
         for (final r in (j['reciters'] as List))
           if ((r as Map)['verified'] == true)
-            _Rec('${r['id']}', '${r['name']}', '${r['folder']}', '${r['per_ayah_url']}')
+            _Rec('${r['id']}', '${r['name']}', '${r['folder']}', '${r['per_ayah_url']}',
+                '${r['country'] ?? ''}', '${r['image'] ?? ''}')
       ];
       if (mounted) setState(() => _recs = list);
     } catch (_) {}
@@ -357,7 +362,10 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     return PopScope(
       canPop: !_busy && _step == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && !_busy && _step > 0) setState(() => _step--);
+        if (!didPop && !_busy && _step > 0) setState(() {
+          ReciterPreview.stop();
+          _step--;
+        });
       },
       child: Scaffold(
         appBar: AppBar(
@@ -369,7 +377,10 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                 ? null
                 : () {
                     if (_step > 0) {
-                      setState(() => _step--);
+                      setState(() {
+          ReciterPreview.stop();
+          _step--;
+        });
                     } else {
                       Navigator.of(context).maybePop();
                     }
@@ -472,7 +483,10 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                     if (last) {
                       _create();
                     } else {
-                      setState(() => _step++);
+                      setState(() {
+          ReciterPreview.stop();
+          _step++;
+        });
                     }
                   },
             child: Row(
@@ -779,16 +793,6 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         const Text('The reciter list is not downloaded. Open Library, Resources, then come back.'),
       ];
     }
-    String initials(String n) {
-      final parts = n
-          .replaceAll(RegExp(r'\([^)]*\)'), ' ')
-          .split(RegExp(r'\s+'))
-          .where((p) => RegExp(r'[A-Za-z]').hasMatch(p))
-          .toList();
-      if (parts.isEmpty) return '?';
-      return (parts.first[0] + (parts.length > 1 ? parts.last[0] : '')).toUpperCase();
-    }
-
     return [
       const Text(
         'Each verse recording is downloaded once when you create the video, then kept on the phone.',
@@ -810,23 +814,26 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: const Color(0xFFEDE8FF),
-                    child: Text(initials(_recs[i].name),
-                        style: const TextStyle(color: Color(0xFF3A2C8F), fontWeight: FontWeight.w800)),
-                  ),
+                  ReciterAvatar(id: _recs[i].id, name: _recs[i].name, image: _recs[i].image, radius: 24),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(_recs[i].name,
-                            style: const TextStyle(color: Color(0xFF1E1840), fontWeight: FontWeight.w800, fontSize: 15)),
-                        const Text("Complete Qur'an", style: TextStyle(color: Color(0xFF6B648F), fontSize: 12.5)),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Color(0xFF1E1840), fontWeight: FontWeight.w800, fontSize: 14.5, height: 1.2)),
+                        Text(
+                            _recs[i].country.isEmpty ? "Complete Qur'an" : "Complete Qur'an  \u2022  ${_recs[i].country}",
+                            style: const TextStyle(color: Color(0xFF6B648F), fontSize: 12.5)),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 6),
+                  ReciterPreviewButton(id: _recs[i].id, urlTemplate: _recs[i].urlTemplate),
+                  const SizedBox(width: 10),
                   Icon(
                     _rec == i ? Icons.check_circle : Icons.radio_button_unchecked,
                     color: _rec == i ? KColors.selected : const Color(0xFFB9B2D8),
