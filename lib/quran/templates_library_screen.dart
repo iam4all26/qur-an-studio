@@ -6,6 +6,7 @@ import 'package:kainuwa_encoder/kainuwa_encoder.dart';
 
 import '../theme.dart';
 import 'new_project_wizard.dart';
+import 'resource_manager.dart';
 import 'templates.dart';
 
 class TemplatesLibraryScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
   final Set<String> _fav = {};
   String _filter = 'All';
   bool _loading = true;
+  bool _searching = false;
+  String _q = '';
 
   @override
   void initState() {
@@ -59,6 +62,9 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
         if (_filter == 'All') return true;
         if (_filter == 'Favorites') return _fav.contains(t.id);
         return t.category == _filter;
+      }).where((t) {
+        final q = _q.trim().toLowerCase();
+        return q.isEmpty || t.name.toLowerCase().contains(q) || t.category.toLowerCase().contains(q);
       }).toList();
 
   @override
@@ -68,12 +74,43 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text('Templates', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text('Templates', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+                ),
+                IconButton(
+                  icon: Icon(_searching ? Icons.close : Icons.search),
+                  onPressed: () => setState(() {
+                    _searching = !_searching;
+                    if (!_searching) _q = '';
+                  }),
+                ),
+              ],
+            ),
           ),
+          if (_searching)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                autofocus: true,
+                onChanged: (v) => setState(() => _q = v),
+                decoration: InputDecoration(
+                  hintText: 'Search templates',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: KColors.lavender,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
           SizedBox(
-            height: 44,
+            height: 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -81,11 +118,24 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
                 for (final c in cats)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(c),
-                      selected: _filter == c,
-                      selectedColor: KColors.selected,
-                      onSelected: (_) => setState(() => _filter = c),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _filter = c),
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        decoration: BoxDecoration(
+                          color: _filter == c ? KColors.selected : KColors.lavender,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Text(
+                          c,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -130,9 +180,15 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
-                  'Qur\'an',
+                  '\u0628\u0650\u0633\u0652\u0645\u0650 \u0671\u0644\u0644\u0651\u064e\u0647\u0650',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(t.arabicColor), fontSize: 20, fontWeight: FontWeight.w700),
+                  textDirection: TextDirection.rtl,
+                  style: TextStyle(
+                    color: Color(t.arabicColor),
+                    fontSize: 22,
+                    fontFamily: ResourceManager.instance.familyIfReady(t.arabicFont, fallback: ''),
+                    shadows: const [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 1))],
+                  ),
                 ),
               ),
             ),
@@ -153,17 +209,19 @@ class _TemplatesLibraryScreenState extends State<TemplatesLibraryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(t.name, style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
-                    Text(t.category, style: const TextStyle(fontSize: 11, color: Colors.white70)),
+                    const Text('9:16', style: TextStyle(fontSize: 11, color: Colors.white70)),
                   ],
                 ),
               ),
             ),
             Positioned(
-              top: 4,
-              right: 4,
+              top: 6,
+              right: 6,
               child: IconButton(
+                style: IconButton.styleFrom(backgroundColor: Colors.black38),
+                visualDensity: VisualDensity.compact,
                 icon: Icon(fav ? Icons.favorite : Icons.favorite_border,
-                    color: fav ? KColors.gold : Colors.white),
+                    size: 20, color: fav ? KColors.gold : Colors.white),
                 onPressed: () => _toggle(t.id),
               ),
             ),
