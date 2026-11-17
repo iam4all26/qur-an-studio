@@ -148,86 +148,181 @@ class _RecitersScreenState extends State<RecitersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reciters')),
+      appBar: AppBar(centerTitle: true, title: const Text('Reciters')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
+          : Column(
               children: [
-                if (_list.isEmpty)
-                  const Text('The reciter list is not downloaded. Open Library, Resources first.'),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final f in const ['All', 'Favorites', 'Downloaded'])
-                      ChoiceChip(
-                        label: Text(f),
-                        selected: _filter == f,
-                        selectedColor: KColors.selected,
-                        onSelected: (_) => setState(() => _filter = f),
-                      ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Row(
+                    children: [
+                      for (final f in const ['All', 'Favorites', 'Downloaded'])
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _filter = f),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _filter == f ? KColors.selected : KColors.lavender,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                f,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                for (final r in _shown) _row(r),
-                if (_shown.isEmpty && _list.isNotEmpty) const Text('Nothing here yet.'),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: _import,
-                  icon: const Icon(Icons.upload_file),
-                  label: const Text('Import My Audio'),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    children: [
+                      if (_list.isEmpty)
+                        const Text('The reciter list is not downloaded. Open Library, Resources first.'),
+                      for (final r in _shown) _row(r),
+                      if (_shown.isEmpty && _list.isNotEmpty) const Text('Nothing here yet.'),
+                      if (_note != null)
+                        Padding(padding: const EdgeInsets.only(top: 8), child: Text(_note!)),
+                      for (var i = 0; i < _mine.length; i++)
+                        Card(
+                          child: ListTile(
+                            title: Text(_mine[i].name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            subtitle: Text(_mine[i].ms > 0
+                                ? '${(_mine[i].ms / 1000).toStringAsFixed(1)} s'
+                                : 'Length unknown'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () async {
+                                _mine.removeAt(i);
+                                await _saveMine();
+                                if (mounted) setState(() {});
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Use your own recitation (MP3, M4A, WAV). Using it inside a project comes with the sync studio.',
-                  style: TextStyle(fontSize: 12, color: KColors.accent),
-                ),
-                if (_note != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_note!)),
-                for (var i = 0; i < _mine.length; i++)
-                  Card(
-                    child: ListTile(
-                      title: Text(_mine[i].name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(_mine[i].ms > 0
-                          ? '${(_mine[i].ms / 1000).toStringAsFixed(1)} s'
-                          : 'Length unknown'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () async {
-                          _mine.removeAt(i);
-                          await _saveMine();
-                          if (mounted) setState(() {});
-                        },
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: _import,
+                      child: Ink(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: KColors.selected,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.upload_file, color: Colors.white),
+                            SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Import My Audio',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Use your own recitation (MP3, M4A, WAV)',
+                                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                ),
               ],
             ),
     );
   }
 
+  String _initials(String name) {
+    final clean = name.replaceAll(RegExp(r'\([^)]*\)'), ' ').trim();
+    final parts = clean.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+  }
+
   Widget _row(_R r) {
     final fav = _fav.contains(r.id);
-    return Card(
-      child: ListTile(
-        title: Text(r.name),
-        subtitle: Text(r.downloaded > 0
-            ? '${r.downloaded} verse recordings on this phone'
-            : 'Downloaded when you create a video'),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (r.downloaded > 0)
-              IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _clear(r)),
-            IconButton(
-              icon: Icon(fav ? Icons.favorite : Icons.favorite_border,
-                  color: fav ? KColors.gold : null),
-              onPressed: () async {
-                setState(() => fav ? _fav.remove(r.id) : _fav.add(r.id));
-                await _saveFav();
-              },
+    const dark = Color(0xFF1B1633);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F4FB),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: const Color(0xFFE6DFFB),
+            child: Text(
+              _initials(r.name),
+              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  r.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: dark),
+                ),
+                Text(
+                  r.downloaded > 0
+                      ? "Complete Qur'an  \u2022  ${r.downloaded} verses on this phone"
+                      : "Complete Qur'an",
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF6B6785)),
+                ),
+              ],
+            ),
+          ),
+          if (r.downloaded > 0)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color(0xFF6B6785)),
+              onPressed: () => _clear(r),
+            ),
+          IconButton(
+            icon: Icon(
+              fav ? Icons.favorite : Icons.favorite_border,
+              color: fav ? KColors.selected : const Color(0xFF6B6785),
+            ),
+            onPressed: () async {
+              setState(() => fav ? _fav.remove(r.id) : _fav.add(r.id));
+              await _saveFav();
+            },
+          ),
+        ],
       ),
     );
   }

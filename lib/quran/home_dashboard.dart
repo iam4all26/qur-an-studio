@@ -6,6 +6,7 @@ import '../screens/lesson_editor_screen.dart';
 import '../theme.dart';
 import 'new_project_wizard.dart';
 import 'resource_manager.dart';
+import 'reciters_screen.dart';
 import 'resources_screen.dart';
 import 'templates.dart';
 
@@ -21,6 +22,12 @@ class HomeDashboard extends StatelessWidget {
   final VoidCallback onOpenProjects;
   final VoidCallback onOpenTemplates;
   final VoidCallback onOpenLibrary;
+
+  String _clock(int ms) {
+    final t = ms ~/ 1000;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(t ~/ 60)}:${two(t % 60)}';
+  }
 
   String _date(int ms) {
     final d = DateTime.fromMillisecondsSinceEpoch(ms);
@@ -61,7 +68,11 @@ class HomeDashboard extends StatelessWidget {
               _action(Icons.folder_outlined, 'Projects', onOpenProjects),
               _action(Icons.dashboard_customize_outlined, 'Templates', onOpenTemplates),
               _action(Icons.menu_book_outlined, "Qur'an", onOpenLibrary),
-              _action(Icons.mic_none, 'Reciters', onOpenLibrary),
+              _action(Icons.mic_none, 'Reciters', () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const RecitersScreen()),
+                );
+              }),
             ],
           ),
           const SizedBox(height: 18),
@@ -222,49 +233,55 @@ class HomeDashboard extends StatelessWidget {
 
   Widget _projectCard(BuildContext context, Course c) {
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => LessonEditorScreen(courseId: c.id, lessonId: c.lessons.first.id),
         ),
       ),
       child: Ink(
-        padding: const EdgeInsets.all(14),
+        height: 104,
+        padding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
         decoration: BoxDecoration(
-          color: KColors.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF3B2A78), Color(0xFF8A4B3A)],
+          ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF7C3A12), KColors.deepPurple]),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.play_arrow, color: Colors.white),
-            ),
-            const SizedBox(width: 14),
             Expanded(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     c.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'Created ${_date(c.createdAt)}',
-                    style: const TextStyle(fontSize: 12, color: KColors.accent),
+                    '${_clock(c.totalMs)}  \u2022  Created ${_date(c.createdAt)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right),
+            Container(
+              width: 38,
+              height: 38,
+              decoration: const BoxDecoration(color: KColors.selected, shape: BoxShape.circle),
+              child: const Icon(Icons.play_arrow, color: Colors.white),
+            ),
           ],
         ),
       ),
