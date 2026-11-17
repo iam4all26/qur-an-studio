@@ -1,3 +1,4 @@
+import '../quran/editor_background.dart';
 import '../quran/change_reciter.dart';
 import '../editor/side_sheet.dart';
 import 'dart:async';
@@ -386,40 +387,13 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
 
   /// The Background tool: this slide, every slide, or a dark layer over every slide so text stays readable.
   Future<void> _backgroundMenu() async {
-    final how = await showEditorSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.wallpaper),
-              title: const Text('Change this slide'),
-              onTap: () => Navigator.of(sheetContext).pop('one'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.collections_outlined),
-              title: const Text('Change all slides'),
-              subtitle: const Text('One background for the whole video'),
-              onTap: () => Navigator.of(sheetContext).pop('all'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.contrast),
-              title: const Text('Darken background'),
-              subtitle: const Text('Makes text readable on any background'),
-              onTap: () => Navigator.of(sheetContext).pop('dark'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (how == null || !mounted) return;
-    if (how == 'one') {
-      await _setBackground();
-    } else if (how == 'all') {
-      await _setBackgroundAll();
-    } else {
+    final lesson = _lesson();
+    if (lesson == null) return;
+    final result = await editBackground(context, lesson, _currentScene());
+    if (!mounted) return;
+    if (result == 'changed') {
+      await _commit();
+    } else if (result == 'dark') {
       await _overlaySheet();
     }
   }
@@ -2734,7 +2708,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
         await _openSound();
         break;
       case 3:
-        await _openEdit('arrange');
+        await _changeShape();
         break;
     }
     if (mounted) setState(() => _tab = -1);
@@ -2745,7 +2719,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     (Icons.text_fields, 'Text'),
     (Icons.wallpaper, 'Background'),
     (Icons.graphic_eq, 'Audio'),
-    (Icons.layers_outlined, 'Layers'),
+    (Icons.aspect_ratio, 'Format'),
   ];
 
   Widget _bottomNav(double u) {
