@@ -1,142 +1,186 @@
 {
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "templates": [
   {
-   "id": "emerald",
-   "name": "Emerald",
-   "category": "Natural",
+   "id": "geometric_gold",
+   "name": "Gold Geometry",
+   "category": "Modern",
+   "shadow": false,
    "background": {
     "type": "asset",
-    "portrait": "assets/templates/bg/emerald_p.jpg",
-    "landscape": "assets/templates/bg/emerald_l.jpg"
+    "portrait": "assets/templates/bg/geometric_gold_p.jpg",
+    "landscape": "assets/templates/bg/geometric_gold_l.jpg"
    },
    "arabic": {
-    "color": "0xFFFFFFFF",
-    "sizeTall": 78,
-    "sizeWide": 64
+    "font": "Amiri Quran",
+    "color": "0xFFFFF4D6",
+    "sizeTall": 74,
+    "sizeWide": 60
    },
    "translation": {
-    "color": "0xFFF6C101",
+    "font": "Noto Serif",
+    "color": "0xFFE8C96A",
     "sizeTall": 40,
     "sizeWide": 34
    }
   },
   {
-   "id": "cinematic",
-   "name": "Cinematic",
+   "id": "night_mihrab",
+   "name": "Night Sky",
    "category": "Cinematic",
+   "shadow": true,
    "background": {
     "type": "asset",
-    "portrait": "assets/templates/bg/cinematic_p.jpg",
-    "landscape": "assets/templates/bg/cinematic_l.jpg"
+    "portrait": "assets/templates/bg/night_mihrab_p.jpg",
+    "landscape": "assets/templates/bg/night_mihrab_l.jpg"
    },
    "arabic": {
+    "font": "Noto Naskh Arabic",
     "color": "0xFFFFFFFF",
-    "sizeTall": 78,
-    "sizeWide": 64
+    "sizeTall": 74,
+    "sizeWide": 60
    },
    "translation": {
-    "color": "0xFFF0B84D",
+    "font": "Noto Sans",
+    "color": "0xFFB9C4F5",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "desert",
+   "name": "Desert Sunset",
+   "category": "Natural",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/desert_p.jpg",
+    "landscape": "assets/templates/bg/desert_l.jpg"
+   },
+   "arabic": {
+    "font": "Scheherazade New",
+    "color": "0xFFFFFFFF",
+    "sizeTall": 80,
+    "sizeWide": 66
+   },
+   "translation": {
+    "font": "Noto Serif",
+    "color": "0xFFFFE9C2",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "parchment",
+   "name": "Parchment",
+   "category": "Minimal",
+   "shadow": false,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/parchment_p.jpg",
+    "landscape": "assets/templates/bg/parchment_l.jpg"
+   },
+   "arabic": {
+    "font": "Noto Naskh Arabic",
+    "color": "0xFF3B2410",
+    "sizeTall": 74,
+    "sizeWide": 60
+   },
+   "translation": {
+    "font": "Noto Serif",
+    "color": "0xFF6B4A1E",
     "sizeTall": 40,
     "sizeWide": 34
    }
   },
   {
    "id": "minimal",
-   "name": "Minimal",
+   "name": "Minimal Black",
    "category": "Minimal",
+   "shadow": false,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/minimal_p.jpg",
     "landscape": "assets/templates/bg/minimal_l.jpg"
    },
    "arabic": {
+    "font": "Noto Kufi Arabic",
     "color": "0xFFFFFFFF",
-    "sizeTall": 78,
-    "sizeWide": 64
+    "sizeTall": 66,
+    "sizeWide": 54
    },
    "translation": {
-    "color": "0xFFB9C4E8",
+    "font": "Noto Sans",
+    "color": "0xFFC9A961",
     "sizeTall": 40,
     "sizeWide": 34
    }
   },
   {
-   "id": "elegant",
-   "name": "Elegant",
-   "category": "Modern",
-   "background": {
-    "type": "asset",
-    "portrait": "assets/templates/bg/elegant_p.jpg",
-    "landscape": "assets/templates/bg/elegant_l.jpg"
-   },
-   "arabic": {
-    "color": "0xFFFFFFFF",
-    "sizeTall": 78,
-    "sizeWide": 64
-   },
-   "translation": {
-    "color": "0xFFE7C873",
-    "sizeTall": 40,
-    "sizeWide": 34
-   }
-  },
-  {
-   "id": "nature",
-   "name": "Nature",
+   "id": "emerald",
+   "name": "Emerald Mihrab",
    "category": "Natural",
+   "shadow": false,
    "background": {
     "type": "asset",
-    "portrait": "assets/templates/bg/nature_p.jpg",
-    "landscape": "assets/templates/bg/nature_l.jpg"
+    "portrait": "assets/templates/bg/emerald_p.jpg",
+    "landscape": "assets/templates/bg/emerald_l.jpg"
    },
    "arabic": {
+    "font": "Scheherazade New",
     "color": "0xFFFFFFFF",
     "sizeTall": 78,
     "sizeWide": 64
    },
    "translation": {
-    "color": "0xFFD8F3A0",
-    "sizeTall": 40,
-    "sizeWide": 34
-   }
-  },
-  {
-   "id": "modern",
-   "name": "Modern",
-   "category": "Modern",
-   "background": {
-    "type": "asset",
-    "portrait": "assets/templates/bg/modern_p.jpg",
-    "landscape": "assets/templates/bg/modern_l.jpg"
-   },
-   "arabic": {
-    "color": "0xFFFFFFFF",
-    "sizeTall": 78,
-    "sizeWide": 64
-   },
-   "translation": {
+    "font": "Noto Serif",
     "color": "0xFFF6C101",
     "sizeTall": 40,
     "sizeWide": 34
    }
   },
   {
-   "id": "sand",
-   "name": "Sand",
-   "category": "Minimal",
+   "id": "blue_tiles",
+   "name": "Blue Tiles",
+   "category": "Modern",
+   "shadow": false,
    "background": {
     "type": "asset",
-    "portrait": "assets/templates/bg/sand_p.jpg",
-    "landscape": "assets/templates/bg/sand_l.jpg"
+    "portrait": "assets/templates/bg/blue_tiles_p.jpg",
+    "landscape": "assets/templates/bg/blue_tiles_l.jpg"
    },
    "arabic": {
-    "color": "0xFF1E1433",
-    "sizeTall": 78,
-    "sizeWide": 64
+    "font": "Reem Kufi",
+    "color": "0xFFFFFFFF",
+    "sizeTall": 70,
+    "sizeWide": 58
    },
    "translation": {
-    "color": "0xFF7A4B00",
+    "font": "Noto Sans",
+    "color": "0xFFBFE0FF",
+    "sizeTall": 40,
+    "sizeWide": 34
+   }
+  },
+  {
+   "id": "dawn",
+   "name": "Dawn Sky",
+   "category": "Cinematic",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/dawn_p.jpg",
+    "landscape": "assets/templates/bg/dawn_l.jpg"
+   },
+   "arabic": {
+    "font": "Noto Naskh Arabic",
+    "color": "0xFFFFFFFF",
+    "sizeTall": 74,
+    "sizeWide": 60
+   },
+   "translation": {
+    "font": "Noto Sans",
+    "color": "0xFFFFF1E6",
     "sizeTall": 40,
     "sizeWide": 34
    }

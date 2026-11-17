@@ -40,7 +40,10 @@ class AboutScreen extends StatelessWidget {
             'Abdurrahman As-Sudais and Saad Al-Ghamdi.',
           ),
           _h('Font'),
-          const SelectableText('Amiri Quran, SIL Open Font Licence 1.1.'),
+          const SelectableText(
+            'Amiri Quran, Noto Naskh Arabic, Scheherazade New, Noto Kufi Arabic, Reem Kufi, Noto Sans '
+            'and Noto Serif, all under the SIL Open Font Licence 1.1.',
+          ),
           _h('Your videos'),
           const SelectableText(
             'Check the text and the recitation before you publish a video. If you share a video, '

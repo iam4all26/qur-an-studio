@@ -381,7 +381,8 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
           tall: tall,
           durationMs: _b[i + 1] - _b[i],
           look: look,
-          fontFamily: fontOk ? _family : '',
+          fontFamily: rm.familyIfReady(look.arabicFont, fallback: fontOk ? _family : ''),
+          translationFont: rm.familyIfReady(look.translationFont),
           footer: _footer ? '${sel.surah.nameEn} - ${sel.surah.number}:${v.ayah}' : null,
         );
         lesson.scenes.addAll(plan.scenesFor(

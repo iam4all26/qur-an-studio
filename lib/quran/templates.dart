@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-/// A video template, read from assets/templates/templates.json (schemaVersion 1).
+/// A video template, read from assets/templates/templates.json (schemaVersion 2).
 class QTemplate {
   QTemplate({
     required this.id,
@@ -16,6 +16,9 @@ class QTemplate {
     required this.arabicWide,
     required this.translationTall,
     required this.translationWide,
+    this.arabicFont = '',
+    this.translationFont = '',
+    this.shadow = false,
   });
 
   final String id;
@@ -29,6 +32,14 @@ class QTemplate {
   final double arabicWide;
   final double translationTall;
   final double translationWide;
+
+  /// Font families the template wants. They are downloaded Qur'an fonts; when one is not
+  /// installed the app falls back to Amiri Quran, then to the default font.
+  final String arabicFont;
+  final String translationFont;
+
+  /// Soft shadow behind the text, for bright pictures.
+  final bool shadow;
 
   /// Square and vertical videos use the portrait picture.
   String assetFor(int w, int h) => w > h ? landscapeAsset : portraitAsset;
@@ -51,6 +62,9 @@ class QTemplate {
       arabicWide: (ar['sizeWide'] as num).toDouble(),
       translationTall: (tr['sizeTall'] as num).toDouble(),
       translationWide: (tr['sizeWide'] as num).toDouble(),
+      arabicFont: (ar['font'] as String?) ?? '',
+      translationFont: (tr['font'] as String?) ?? '',
+      shadow: (j['shadow'] as bool?) ?? false,
     );
   }
 }

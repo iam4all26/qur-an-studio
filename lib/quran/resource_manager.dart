@@ -121,6 +121,15 @@ class ResourceManager extends ChangeNotifier {
     return false;
   }
 
+  /// The family name when a downloaded font with that family is installed, otherwise [fallback].
+  String familyIfReady(String family, {String fallback = ''}) {
+    if (family.isEmpty) return fallback;
+    for (final e in catalog) {
+      if (e.type == 'font' && e.family == family && stateOf(e) == ResourceState.ready) return family;
+    }
+    return fallback;
+  }
+
   /// SHA-256 of the installed copy of a resource, or null when not installed.
   String? installedHash(String id) => _installed[id];
 

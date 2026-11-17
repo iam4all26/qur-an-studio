@@ -17,6 +17,7 @@ List<Layer> buildVerseLayers({
   required int durationMs,
   required QTemplate look,
   required String fontFamily,
+  String translationFont = '',
   String? footer,
 }) {
   // Display only: QuranEnc footnote markers such as [1] are not shown in the video.
@@ -51,6 +52,7 @@ List<Layer> buildVerseLayers({
       bold: false,
       lineHeight: 1.7,
       fontFamily: fontFamily,
+      shadowOn: look.shadow,
     );
     _fit(arLayer, tall ? look.arabicTall : look.arabicWide, 0.9);
 
@@ -64,6 +66,8 @@ List<Layer> buildVerseLayers({
         color: look.translationColor,
         bold: false,
         lineHeight: 1.3,
+        fontFamily: translationFont,
+        shadowOn: look.shadow,
       );
       _fit(trLayer, tall ? look.translationTall : look.translationWide, 0.88);
     }

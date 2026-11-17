@@ -310,7 +310,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           tall: tall,
           durationMs: dur,
           look: look,
-          fontFamily: fontOk ? _family : '',
+          fontFamily: rm.familyIfReady(look.arabicFont, fallback: fontOk ? _family : ''),
+          translationFont: rm.familyIfReady(look.translationFont),
           footer: _showFooter && it.label.isNotEmpty ? it.label : null,
         );
         lesson.scenes.addAll(plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah)));
@@ -606,6 +607,17 @@ onChanged: (v) => setState(() => _showFooter = v),
                 fit: StackFit.expand,
                 children: [
                   Image.asset(t.portraitAsset, fit: BoxFit.cover, cacheWidth: 300),
+                  Center(
+                    child: Text(
+                      '\u0628\u0650\u0633\u0652\u0645\u0650 \u0671\u0644\u0644\u0651\u064e\u0647\u0650',
+                      textDirection: TextDirection.rtl,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Color(t.arabicColor),
+                        fontFamily: ResourceManager.instance.familyIfReady(t.arabicFont, fallback: _family),
+                      ),
+                    ),
+                  ),
                   Positioned(
                     left: 6,
                     bottom: 6,

@@ -110,7 +110,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             "Credits: Qur'an text from the Tanzil Project (tanzil.net), unmodified. "
             'English translation: Sahih International via Tanzil. '
             'Hausa translation from QuranEnc.com (version 1.2.2). '
-            'Font: Amiri Quran (SIL Open Font Licence). '
+            'Fonts: Amiri Quran, Noto Naskh Arabic, Scheherazade New, Noto Kufi Arabic, Reem Kufi, Noto Sans, Noto Serif (SIL Open Font Licence). '
             'Recitations belong to their reciters and are downloaded on the phone.',
             style: TextStyle(fontSize: 12),
           ),
