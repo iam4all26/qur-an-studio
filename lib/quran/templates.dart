@@ -18,7 +18,8 @@ class QTemplate {
     required this.translationWide,
     this.arabicFont = '',
     this.translationFont = '',
-    this.shadow = false,
+    this.shadow = true,
+    this.shadowColor = 0xF2000000,
   });
 
   final String id;
@@ -38,8 +39,9 @@ class QTemplate {
   final String arabicFont;
   final String translationFont;
 
-  /// Soft shadow behind the text, for bright pictures.
+  /// Shadow behind the text so it reads on any picture or video. On by default.
   final bool shadow;
+  final int shadowColor;
 
   /// Square and vertical videos use the portrait picture.
   String assetFor(int w, int h) => w > h ? landscapeAsset : portraitAsset;
@@ -64,7 +66,8 @@ class QTemplate {
       translationWide: (tr['sizeWide'] as num).toDouble(),
       arabicFont: (ar['font'] as String?) ?? '',
       translationFont: (tr['font'] as String?) ?? '',
-      shadow: (j['shadow'] as bool?) ?? false,
+      shadow: (j['shadow'] as bool?) ?? true,
+      shadowColor: j['shadowColor'] == null ? 0xF2000000 : _color(j['shadowColor']),
     );
   }
 }

@@ -52,8 +52,8 @@ List<Layer> buildVerseLayers({
       bold: false,
       lineHeight: 1.7,
       fontFamily: fontFamily,
-      shadowOn: look.shadow,
     );
+    _shade(arLayer, look);
     _fit(arLayer, tall ? look.arabicTall : look.arabicWide, 0.9);
 
     Layer? trLayer;
@@ -67,8 +67,8 @@ List<Layer> buildVerseLayers({
         bold: false,
         lineHeight: 1.3,
         fontFamily: translationFont,
-        shadowOn: look.shadow,
       );
+      _shade(trLayer, look);
       _fit(trLayer, tall ? look.translationTall : look.translationWide, 0.88);
     }
 
@@ -110,11 +110,22 @@ List<Layer> buildVerseLayers({
       bold: false,
       lineHeight: 1.2,
     );
+    _shade(fl, look);
     _fit(fl, (tall ? look.translationTall : look.translationWide) * 0.8, 0.8);
     fl.cy = 0.93;
     layers.add(fl);
   }
   return layers;
+}
+
+/// A tight, strong shadow that works like a soft outline: the text stays readable on
+/// bright skies, busy patterns and moving video. The user can still change it in the editor.
+void _shade(Layer l, QTemplate look) {
+  l.shadowOn = look.shadow;
+  l.shadowColor = look.shadowColor;
+  l.shadowBlur = 0.012;
+  l.shadowX = 0.0;
+  l.shadowY = 0.01;
 }
 
 int _snap(List<String> t, int idx, int lo, int hi) {

@@ -5,7 +5,7 @@
    "id": "geometric_gold",
    "name": "Gold Geometry",
    "category": "Modern",
-   "shadow": false,
+   "shadow": true,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/geometric_gold_p.jpg",
@@ -74,7 +74,7 @@
    "id": "parchment",
    "name": "Parchment",
    "category": "Minimal",
-   "shadow": false,
+   "shadow": true,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/parchment_p.jpg",
@@ -91,13 +91,14 @@
     "color": "0xFF6B4A1E",
     "sizeTall": 40,
     "sizeWide": 34
-   }
+   },
+   "shadowColor": "0xCCFFF5DC"
   },
   {
    "id": "minimal",
    "name": "Minimal Black",
    "category": "Minimal",
-   "shadow": false,
+   "shadow": true,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/minimal_p.jpg",
@@ -120,7 +121,7 @@
    "id": "emerald",
    "name": "Emerald Mihrab",
    "category": "Natural",
-   "shadow": false,
+   "shadow": true,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/emerald_p.jpg",
@@ -143,7 +144,7 @@
    "id": "blue_tiles",
    "name": "Blue Tiles",
    "category": "Modern",
-   "shadow": false,
+   "shadow": true,
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/blue_tiles_p.jpg",
