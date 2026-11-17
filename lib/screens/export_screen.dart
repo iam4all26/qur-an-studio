@@ -1327,14 +1327,30 @@ class _ExportScreenState extends State<ExportScreen> {
             ),
           ],
         )),
-        FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: KColors.gold,
-            foregroundColor: KColors.onGold,
+        card(Row(
+          children: [
+            const Icon(Icons.save_alt, color: KColors.accent, size: 20),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('Estimated size')),
+            Text(
+              '${estMb.toStringAsFixed(estMb < 10 ? 1 : 0)} MB',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        )),
+        SizedBox(
+          height: 54,
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: KColors.selected,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            onPressed: lesson == null ? null : () => setState(() => _runPage = true),
+            icon: const Icon(Icons.play_arrow_rounded, size: 26),
+            label: const Text('Export Video'),
           ),
-          onPressed: lesson == null ? null : () => setState(() => _runPage = true),
-          icon: const Icon(Icons.movie_creation_outlined),
-          label: const Text('Export Video'),
         ),
         const SizedBox(height: 8),
         OutlinedButton(onPressed: () => Navigator.of(context).maybePop(), child: const Text('Cancel')),
@@ -1453,7 +1469,7 @@ class _ExportScreenState extends State<ExportScreen> {
                   IconButton(icon: const Icon(Icons.more_vert), onPressed: _moreSheet),
                 ],
               )
-            : AppBar(title: Text(_runPage ? (_busy ? '' : 'Exporting') : 'Export Video')),
+            : AppBar(centerTitle: true, title: Text(_runPage ? (_busy ? '' : 'Exporting') : 'Export Video')),
         body: Stack(
           clipBehavior: Clip.none,
           children: [
