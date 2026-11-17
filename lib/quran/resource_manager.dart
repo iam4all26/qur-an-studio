@@ -143,7 +143,12 @@ class ResourceManager extends ChangeNotifier {
   Future<List<int>> _fetch(String url, {void Function(int got)? onBytes}) async {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
-      final req = await client.getUrl(Uri.parse(url));
+      // A changing query value stops raw.githubusercontent.com from serving a cached copy of a
+      // file next to a newer catalog.json (that caused "Checksum mismatch" right after a data build).
+      final fresh = Uri.parse(url).replace(
+        queryParameters: {'cb': DateTime.now().millisecondsSinceEpoch.toString()},
+      );
+      final req = await client.getUrl(fresh);
       final res = await req.close();
       if (res.statusCode != 200) {
         throw HttpException('HTTP ${res.statusCode} for $url');
