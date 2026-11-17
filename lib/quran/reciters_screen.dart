@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:kainuwa_encoder/kainuwa_encoder.dart';
 
 import '../theme.dart';
-import 'resource_manager.dart';
+import 'resource_manager.dart' show ResourceManager, kDataBase;
 
 class _R {
-  _R(this.id, this.name, this.folder, [this.country = '']);
+  _R(this.id, this.name, this.folder, [this.country = '', this.image = '']);
+  final String image;
   final String country;
   final String id;
   final String name;
@@ -56,7 +57,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
     if (e != null && rm.isReady('reciters')) {
       final j = jsonDecode(await File(await rm.pathOf(e)).readAsString()) as Map<String, dynamic>;
       for (final r in (j['reciters'] as List)) {
-        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}', '${r['country'] ?? ''}'));
+        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}', '${r['country'] ?? ''}', '${r['image'] ?? ''}'));
       }
     }
     final fav = File('$_root/favorites.json');
@@ -283,10 +284,23 @@ class _RecitersScreenState extends State<RecitersScreen> {
           CircleAvatar(
             radius: 22,
             backgroundColor: const Color(0xFFE6DFFB),
-            child: Text(
-              _initials(r.name),
-              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
-            ),
+            child: r.image.isEmpty
+                ? Text(
+                    _initials(r.name),
+                    style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
+                  )
+                : ClipOval(
+                    child: Image.network(
+                      '$kDataBase${r.image}',
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Text(
+                        _initials(r.name),
+                        style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
