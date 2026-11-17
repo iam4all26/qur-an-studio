@@ -16,9 +16,9 @@ const List<String> kDefaultTrackOrder = ['image', 'text', 'audio', 'video'];
 String trackName(String id) {
   switch (id) {
     case 'image':
-      return 'Image';
+      return 'Background';
     case 'text':
-      return 'Text';
+      return 'Verses';
     case 'audio':
       return 'Audio';
     default:

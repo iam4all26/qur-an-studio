@@ -2325,7 +2325,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     required Widget timeline,
   }) {
     final landscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    final gap = SizedBox(height: _s(u, 16, 8));
+    final gap = SizedBox(height: math.max(48.0, _s(u, 90)));
     final scrollingTimeline = SingleChildScrollView(child: Column(children: [timeline, gap]));
     // Tapping empty space anywhere here lets go of the selected item or track.
     Widget clearOnTap(Widget child) => GestureDetector(
