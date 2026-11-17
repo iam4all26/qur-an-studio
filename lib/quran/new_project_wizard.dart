@@ -780,7 +780,11 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       ];
     }
     String initials(String n) {
-      final parts = n.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+      final parts = n
+          .replaceAll(RegExp(r'\([^)]*\)'), ' ')
+          .split(RegExp(r'\s+'))
+          .where((p) => RegExp(r'[A-Za-z]').hasMatch(p))
+          .toList();
       if (parts.isEmpty) return '?';
       return (parts.first[0] + (parts.length > 1 ? parts.last[0] : '')).toUpperCase();
     }

@@ -2614,7 +2614,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
                 onTap: () => _navTap(i),
                 child: Container(
                   height: math.max(52.0, _s(u, 116)),
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
+                  margin: EdgeInsets.zero,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -2639,7 +2639,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
                           maxLines: 1,
                           softWrap: false,
                           style: TextStyle(
-                            fontSize: _s(u, 26, 10.5),
+                            fontSize: _s(u, 22, 9.5),
                             fontWeight: FontWeight.w600,
                             color: _tab == i ? Colors.white : KColors.editorNavIcon,
                           ),
