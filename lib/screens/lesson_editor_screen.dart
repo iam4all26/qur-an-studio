@@ -2648,6 +2648,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     if (_selectedAudioId != null) {
       tools.addAll([
         (Icons.volume_up_outlined, 'Volume', _volume),
+        (Icons.content_cut, 'Split', _split),
         (Icons.delete_outline, 'Delete', _deleteSelection),
       ]);
     } else if (_soundSel != null) {
@@ -2727,31 +2728,21 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
         await _addText();
         break;
       case 1:
-      case 2:
-        await _openEdit('style');
-        break;
-      case 3:
-        await _openEdit('animation');
-        break;
-      case 4:
         await _backgroundMenu();
         break;
-      case 5:
+      case 2:
         await _openSound();
         break;
-      case 6:
+      case 3:
         await _openEdit('arrange');
         break;
     }
     if (mounted) setState(() => _tab = -1);
   }
 
-  /// The tools of the editor, in the order of the mockup.
+  /// The tools of the bottom bar. Font, colour and animation live in the item toolbar.
   static const List<(IconData, String)> _tools = [
     (Icons.text_fields, 'Text'),
-    (Icons.font_download_outlined, 'Font'),
-    (Icons.palette_outlined, 'Color'),
-    (Icons.auto_awesome_outlined, 'Animation'),
     (Icons.wallpaper, 'Background'),
     (Icons.graphic_eq, 'Audio'),
     (Icons.layers_outlined, 'Layers'),
