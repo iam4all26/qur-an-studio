@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import 'about_screen.dart';
-import 'reciters_screen.dart';
 import 'resources_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -13,6 +12,7 @@ class MoreScreen extends StatelessWidget {
   Widget _nav(BuildContext context, IconData icon, String title, String sub, Widget page) {
     return Card(
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: Icon(icon),
         title: Text(title),
         subtitle: Text(sub),
@@ -51,20 +51,14 @@ class MoreScreen extends StatelessWidget {
           const Text('More', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           _nav(context, Icons.cloud_download_outlined, 'Resources',
-              "Qur'an text, translations, reciter list and font", const ResourcesScreen()),
+              "Qur'an text, translations and fonts", const ResourcesScreen()),
           _nav(context, Icons.movie_outlined, 'Video backgrounds', 'Moving backgrounds for your videos',
               const BackgroundsScreen()),
-          _nav(context, Icons.mic_none, 'Reciters', 'Favorites, downloads and your own audio',
-              const RecitersScreen()),
           _nav(context, Icons.info_outline, 'About and credits', 'Sources and licences',
               const AboutScreen()),
           const SizedBox(height: 16),
           const Text('Export defaults', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text(
-            'Starting choices for each export. You can still change them on the export page.',
-            style: TextStyle(fontSize: 12, color: KColors.accent),
-          ),
           const SizedBox(height: 10),
           const Text('Video size', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
@@ -83,16 +77,6 @@ class MoreScreen extends StatelessWidget {
               _seg('24 fps', s.frameRate == 24, () => state.updateSettings(s.copyWith(frameRate: 24))),
               const SizedBox(width: 8),
               _seg('30 fps', s.frameRate == 30, () => state.updateSettings(s.copyWith(frameRate: 30))),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Text('App layout', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _seg('Portrait', !s.landscape, () => state.updateSettings(s.copyWith(orientation: 'portrait'))),
-              const SizedBox(width: 8),
-              _seg('Landscape', s.landscape, () => state.updateSettings(s.copyWith(orientation: 'landscape'))),
             ],
           ),
           if (state.loadError != null)

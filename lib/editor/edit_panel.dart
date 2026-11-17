@@ -775,7 +775,6 @@ class _EditPanelState extends State<_EditPanel> {
             },
           ),
         ),
-        _partColorCard(),
         _card(
           'Text Size',
           Icons.format_size,

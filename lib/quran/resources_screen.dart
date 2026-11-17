@@ -129,6 +129,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     };
     return Card(
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(_label(e)),
         subtitle: p != null
             ? Padding(

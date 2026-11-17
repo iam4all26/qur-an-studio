@@ -245,6 +245,7 @@ class _TimelinePanelState extends State<TimelinePanel> {
       var imageLane = 1;
       var textLane = 0;
       for (final layer in scene.layers) {
+        if (layer.id.startsWith('overlay_')) continue;
         final dur = scene.durationMs;
         final from = layer.startMs.clamp(0, math.max(0, dur - 200)).toInt();
         final to = math.max(from + 200, layerEndMs(layer, dur));

@@ -81,7 +81,7 @@ ThemeData buildTheme() {
       color: const Color(0xFF1E1938),
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      margin: EdgeInsets.zero,
+      margin: const EdgeInsets.symmetric(vertical: 5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
 

@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 
-import 'sync_studio_screen.dart';
-import 'about_screen.dart';
 import 'quran_library_screen.dart';
 import 'reciters_screen.dart';
-import 'resources_screen.dart';
+import 'sync_studio_screen.dart';
 
-/// Temporary tab that holds the Qur'an tools until the Phase 1 home screen
-/// replaces it.
+/// The Library tab: the Qur'an, the reciters and the sync studio.
 class QuranHubScreen extends StatelessWidget {
   const QuranHubScreen({super.key});
+
+  Widget _item(BuildContext context, IconData icon, String title, String sub, Widget page) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(sub),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,60 +28,12 @@ class QuranHubScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.mic_none),
-              title: const Text('Reciters'),
-              subtitle: const Text('Favorites, downloads and your own audio'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const RecitersScreen()),
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('About and credits'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AboutScreen()),
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.menu_book_outlined),
-              title: const Text("Qur'an"),
-              subtitle: const Text('Browse 114 surahs and choose verses'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const QuranLibraryScreen()),
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.cloud_download_outlined),
-              title: const Text('Resources'),
-              subtitle: const Text('Download and verify Qur\'an data, translations, reciters, font'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ResourcesScreen()),
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.graphic_eq),
-              title: const Text('Sync my recording'),
-              subtitle: const Text('Mark each verse in your own audio and build the video'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SyncStudioScreen()),
-              ),
-            ),
-          ),
+          _item(context, Icons.menu_book_outlined, "Qur'an", 'Browse 114 surahs and choose verses',
+              const QuranLibraryScreen()),
+          _item(context, Icons.mic_none, 'Reciters', 'Favorites, downloads and your own audio',
+              const RecitersScreen()),
+          _item(context, Icons.graphic_eq, 'Sync my recording', 'Mark each verse in your own audio',
+              const SyncStudioScreen()),
         ],
       ),
     );

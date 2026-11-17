@@ -420,7 +420,7 @@ class _SceneCanvasState extends State<SceneCanvas> {
       }
     }
 
-    if (widget.interactive) {
+    if (widget.interactive && !layer.id.startsWith('overlay_')) {
       content = GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => widget.onSelect?.call(layer.id),

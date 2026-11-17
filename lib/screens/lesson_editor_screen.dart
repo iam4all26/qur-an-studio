@@ -383,6 +383,160 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     _commit();
   }
 
+  /// The Background tool: this slide, every slide, or a dark layer over every slide so text stays readable.
+  Future<void> _backgroundMenu() async {
+    final how = await showEditorSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.wallpaper),
+              title: const Text('Change this slide'),
+              onTap: () => Navigator.of(sheetContext).pop('one'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.collections_outlined),
+              title: const Text('Change all slides'),
+              subtitle: const Text('One background for the whole video'),
+              onTap: () => Navigator.of(sheetContext).pop('all'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.contrast),
+              title: const Text('Darken background'),
+              subtitle: const Text('Makes text readable on any background'),
+              onTap: () => Navigator.of(sheetContext).pop('dark'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (how == null || !mounted) return;
+    if (how == 'one') {
+      await _setBackground();
+    } else if (how == 'all') {
+      await _setBackgroundAll();
+    } else {
+      await _overlaySheet();
+    }
+  }
+
+  Future<void> _setBackgroundAll() async {
+    final lesson = _lesson();
+    if (lesson == null) return;
+    final choice = await showBackgroundSheet(context);
+    if (choice == null) return;
+    for (final sc in lesson.scenes) {
+      sc.bgType = choice.type;
+      sc.bgValue = choice.value;
+      sc.videoPath = '';
+      sc.videoMs = 0;
+    }
+    await _commit();
+  }
+
+  double _overlayNow(Lesson lesson) {
+    for (final sc in lesson.scenes) {
+      for (final l in sc.layers) {
+        if (l.id.startsWith('overlay_')) return l.opacity;
+      }
+    }
+    return 0;
+  }
+
+  /// A full-size black layer under the text of every slide. 0 removes it.
+  void _applyOverlay(Lesson lesson, double opacity) {
+    for (final sc in lesson.scenes) {
+      final i = sc.layers.indexWhere((l) => l.id.startsWith('overlay_'));
+      if (opacity <= 0.001) {
+        if (i >= 0) sc.layers.removeAt(i);
+        continue;
+      }
+      if (i >= 0) {
+        sc.layers[i].opacity = opacity;
+      } else {
+        sc.layers.insert(
+          0,
+          Layer(
+            id: 'overlay_${sc.id}',
+            type: 'shape',
+            cx: 0.5,
+            cy: 0.5,
+            w: 1.0,
+            h: 1.0,
+            color: 0xFF000000,
+            opacity: opacity,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _overlaySheet() async {
+    final lesson = _lesson();
+    if (lesson == null) return;
+    var value = _overlayNow(lesson);
+    await showEditorSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheet) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text('Darken background',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                    ),
+                    Text('${(value * 100).round()}%'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text('Adds a dark layer behind the text on every slide.',
+                    style: TextStyle(fontSize: 12)),
+                Slider(
+                  value: value,
+                  min: 0,
+                  max: 0.9,
+                  onChanged: (v) {
+                    setSheet(() => value = v);
+                    _applyOverlay(lesson, v);
+                    if (mounted) setState(() {});
+                  },
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setSheet(() => value = 0);
+                        _applyOverlay(lesson, 0);
+                        if (mounted) setState(() {});
+                      },
+                      child: const Text('Remove'),
+                    ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      child: const Text('Done'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await _commit();
+  }
+
   Future<void> _addText() async {
     final scene = _currentScene();
     if (scene == null) return;
@@ -2573,7 +2727,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
         await _openEdit('animation');
         break;
       case 4:
-        await _setBackground();
+        await _backgroundMenu();
         break;
       case 5:
         await _openSound();
