@@ -9,8 +9,9 @@ import 'resource_manager.dart' show ResourceManager, kDataBase;
 
 class _R {
   _R(this.id, this.name, this.folder, [this.country = '', this.image = '']);
-  final String image;
-  final String country;
+  String image;
+  String local = ''; // path of the saved picture on this phone, empty until downloaded
+  String country;
   final String id;
   final String name;
   final String folder;
@@ -78,8 +79,61 @@ class _RecitersScreenState extends State<RecitersScreen> {
       } catch (_) {}
     }
     _list = list;
+    for (final r in _list) {
+      final f = File('$_root/pictures/${r.id}.jpg');
+      if (await f.exists()) r.local = f.path;
+    }
     await _count();
     if (mounted) setState(() => _loading = false);
+    _fetchPictures();
+  }
+
+  /// Reads the published reciters.json for picture and country fields, so pictures show
+  /// without updating the saved copy in Resources. Failure (offline) is ignored.
+  Future<void> _fetchPictures() async {
+    try {
+      final c = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+      final req = await c.getUrl(Uri.parse('${kDataBase}reciters.json'));
+      final res = await req.close();
+      if (res.statusCode != 200) {
+        c.close();
+        return;
+      }
+      final text = await res.transform(utf8.decoder).join();
+      c.close();
+      final j = jsonDecode(text) as Map<String, dynamic>;
+      final byId = <String, Map>{
+        for (final r in (j['reciters'] as List)) '${(r as Map)['id']}': r,
+      };
+      for (final r in _list) {
+        final m = byId[r.id];
+        if (m == null) continue;
+        final img = '${m['image'] ?? ''}';
+        if (img.isNotEmpty) r.image = img;
+        final cc = '${m['country'] ?? ''}';
+        if (cc.isNotEmpty) r.country = cc;
+      }
+      if (mounted) setState(() {});
+      // Save each picture once on this phone; later the screen works offline.
+      await Directory('$_root/pictures').create(recursive: true);
+      for (final r in _list) {
+        if (r.image.isEmpty || r.local.isNotEmpty) continue;
+        try {
+          final c2 = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+          final res2 = await (await c2.getUrl(Uri.parse('$kDataBase${r.image}'))).close();
+          if (res2.statusCode == 200) {
+            final bytes = await res2.fold<List<int>>(<int>[], (a, b) => a..addAll(b));
+            if (bytes.length > 1000) {
+              final f = File('$_root/pictures/${r.id}.jpg');
+              await f.writeAsBytes(bytes);
+              r.local = f.path;
+              if (mounted) setState(() {});
+            }
+          }
+          c2.close();
+        } catch (_) {}
+      }
+    } catch (_) {}
   }
 
   Future<void> _count() async {
@@ -284,22 +338,33 @@ class _RecitersScreenState extends State<RecitersScreen> {
           CircleAvatar(
             radius: 22,
             backgroundColor: const Color(0xFFE6DFFB),
-            child: r.image.isEmpty
+            child: r.image.isEmpty && r.local.isEmpty
                 ? Text(
                     _initials(r.name),
                     style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
                   )
                 : ClipOval(
-                    child: Image.network(
-                      '$kDataBase${r.image}',
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Text(
-                        _initials(r.name),
-                        style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
-                      ),
-                    ),
+                    child: r.local.isNotEmpty
+                        ? Image.file(
+                            File(r.local),
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Text(
+                              _initials(r.name),
+                              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                          )
+                        : Image.network(
+                            '$kDataBase${r.image}',
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Text(
+                              _initials(r.name),
+                              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                          ),
                   ),
           ),
           const SizedBox(width: 12),
