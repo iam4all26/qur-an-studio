@@ -11,7 +11,7 @@ import '../models.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
-/// Narration for the current scene and music for the whole lesson.
+/// Recitation audio for the current scene.
 Future<void> showAudioSheet(
   BuildContext context, {
   required Lesson lesson,
@@ -350,59 +350,6 @@ class _AudioSheetState extends State<_AudioSheet> {
           if (_message != null) ...[
             const SizedBox(height: 12),
             Text(_message!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ],
-          const Divider(height: 32),
-          const Text(
-            'Music for the whole video',
-            style: TextStyle(fontWeight: FontWeight.w700, color: KColors.accent),
-          ),
-          const SizedBox(height: 8),
-          if (lesson.musicPath.isEmpty)
-            OutlinedButton.icon(
-              onPressed: _chooseMusic,
-              icon: const Icon(Icons.music_note),
-              label: const Text('Choose music'),
-            )
-          else ...[
-            Card(
-              margin: EdgeInsets.zero,
-              child: ListTile(
-                leading: const Icon(Icons.music_note, color: KColors.purple),
-                title: Text(_shortName(lesson.musicPath), maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: TextButton(onPressed: _removeMusic, child: const Text('Remove')),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text('Music speed ${lesson.musicSpeed}x'.replaceAll('.0x', 'x')),
-            const SizedBox(height: 6),
-            SpeedChips(
-              value: lesson.musicSpeed,
-              onChanged: (v) {
-                setState(() => lesson.musicSpeed = v);
-                widget.onChanged();
-              },
-            ),
-            const SizedBox(height: 12),
-            Text('Music volume ${(lesson.musicVolume * 100).round()}%'),
-            Slider(
-              value: lesson.musicVolume.clamp(0.0, 1.0).toDouble(),
-              divisions: 20,
-              onChanged: (v) => setState(() => lesson.musicVolume = v),
-              onChangeEnd: (_) => widget.onChanged(),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Fade in and fade out'),
-              value: lesson.musicFade,
-              onChanged: (v) {
-                setState(() => lesson.musicFade = v);
-                widget.onChanged();
-              },
-            ),
-            const Text(
-              'The music plays under the whole video. If it is shorter than the video it will stop when it ends.',
-              style: TextStyle(fontSize: 12),
-            ),
           ],
         ],
       ),

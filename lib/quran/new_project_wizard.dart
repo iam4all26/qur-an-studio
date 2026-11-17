@@ -55,7 +55,9 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   final rm = ResourceManager.instance;
   final _name = TextEditingController(text: 'My Qur\'an video');
   int _step = 0;
-  int _shape = 0; // 0 = 9:16, 1 = 16:9, 2 = 1:1
+  int _shape = 0; // 0 = 9:16, 1 = 16:9, 2 = 1:1, 3 = custom
+  (int, int) _custom = (4, 5);
+  String _align = 'center';
   VerseSelection? _sel;
   bool _withTr = true;
   bool _showFooter = true;
@@ -70,7 +72,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   String? _error;
 
   static const _shapes = [(9, 16), (16, 9), (1, 1)];
-  static const _shapeNames = ['Vertical 9:16', 'Horizontal 16:9', 'Square 1:1'];
+  (int, int) get _dims => _shape == 3 ? _custom : _shapes[_shape];
 
   @override
   void initState() {
@@ -291,7 +293,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       final bgProblem = plan.problem;
       if (bgProblem != null) throw StateError(bgProblem);
       final state = AppScope.read(context);
-      final (aw, ah) = _shapes[_shape];
+      final (aw, ah) = _dims;
       final ids = await state.addVideo(title: _name.text.trim(), aspectW: aw, aspectH: ah);
       final lesson = state.lessonById(ids.$1, ids.$2);
       if (lesson == null) throw StateError('The new project was not found.');
@@ -312,6 +314,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           look: look,
           fontFamily: rm.familyIfReady(look.arabicFont, fallback: fontOk ? _family : ''),
           translationFont: rm.familyIfReady(look.translationFont),
+          translationAlign: _align,
           footer: _showFooter && it.label.isNotEmpty ? it.label : null,
         );
         lesson.scenes.addAll(plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah)));
@@ -352,9 +355,27 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_busy,
+      canPop: !_busy && _step == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_busy && _step > 0) setState(() => _step--);
+      },
       child: Scaffold(
-        appBar: AppBar(title: const Text('New Project')),
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('New Project'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _busy
+                ? null
+                : () {
+                    if (_step > 0) {
+                      setState(() => _step--);
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
+          ),
+        ),
         body: Column(
           children: [
             _indicator(),
@@ -390,20 +411,39 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
 
   Widget _indicator() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
       child: Row(
         children: [
           for (var i = 0; i < _steps.length; i++)
             Expanded(
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: i <= _step ? KColors.selected : KColors.surface,
-                    child: Text('${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i <= _step ? KColors.selected : KColors.surface,
+                      border: Border.all(
+                        color: i == _step ? Colors.white : Colors.white24,
+                        width: i == _step ? 2 : 1,
+                      ),
+                    ),
+                    child: i < _step
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                        : Text('${i + 1}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                   ),
-                  const SizedBox(height: 4),
-                  Text(_steps[i], style: const TextStyle(fontSize: 10), maxLines: 1),
+                  const SizedBox(height: 5),
+                  Text(
+                    _steps[i],
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: i == _step ? FontWeight.w700 : FontWeight.w400,
+                      color: i == _step ? Colors.white : Colors.white60,
+                    ),
+                    maxLines: 1,
+                  ),
                 ],
               ),
             ),
@@ -414,78 +454,192 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
 
   Widget _footer() {
     final last = _step == _steps.length - 1;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-      decoration: const BoxDecoration(
-        color: KColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: SafeArea(
         top: false,
-        child: Row(
-          children: [
-            if (_step > 0)
-              OutlinedButton(
-                onPressed: _busy ? null : () => setState(() => _step--),
-                child: const Text('Back'),
-              ),
-            if (_step > 0) const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton(
-                onPressed: _busy || !_canNext
-                    ? null
-                    : () {
-                        if (last) {
-                          _create();
-                        } else {
-                          setState(() => _step++);
-                        }
-                      },
-                child: Text(last ? 'Create video' : 'Next'),
-              ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: KColors.selected,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-          ],
+            onPressed: _busy || !_canNext
+                ? null
+                : () {
+                    if (last) {
+                      _create();
+                    } else {
+                      setState(() => _step++);
+                    }
+                  },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(last ? 'Create video' : 'Next', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                if (!last) ...[const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 20)],
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  List<Widget> _details() => [
-        const Text('Project name', style: TextStyle(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _name,
-          onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+  /// A light card, as in the mockup, with dark text inside.
+  Widget _whiteCard({required Widget child, EdgeInsets padding = const EdgeInsets.all(16)}) {
+    return Theme(
+      data: ThemeData.light(useMaterial3: true).copyWith(
+        colorScheme: const ColorScheme.light(primary: KColors.selected),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF3F1FA),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
         ),
-        const SizedBox(height: 20),
-        const Text('Video format', style: TextStyle(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Row(
+      ),
+      child: Builder(
+        builder: (context) => Container(
+          width: double.infinity,
+          padding: padding,
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          child: DefaultTextStyle.merge(style: const TextStyle(color: Color(0xFF1E1840)), child: child),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _askCustom() async {
+    final w = TextEditingController(text: '${_custom.$1}');
+    final h = TextEditingController(text: '${_custom.$2}');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Custom size'),
+        content: Row(
           children: [
-            for (var i = 0; i < 3; i++)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: i < 2 ? 8 : 0),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () => setState(() => _shape = i),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 6),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: _shape == i ? KColors.selected.withValues(alpha: 0.25) : KColors.surface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: _shape == i ? KColors.selected : Colors.transparent),
-                      ),
-                      child: Text(_shapeNames[i], textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
-                    ),
-                  ),
-                ),
-              ),
+            Expanded(child: TextField(controller: w, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Width'))),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text(':')),
+            Expanded(child: TextField(controller: h, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Height'))),
           ],
         ),
-      ];
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Use this size')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final a = int.tryParse(w.text.trim()) ?? 0;
+    final b = int.tryParse(h.text.trim()) ?? 0;
+    // A ratio between 1:3 and 3:1 keeps the text and export sizes sensible.
+    if (a < 1 || b < 1 || a > 100 || b > 100 || a / b > 3 || b / a > 3) {
+      setState(() => _error = 'Use a ratio between 1:3 and 3:1, for example 4:5.');
+      return;
+    }
+    setState(() {
+      _error = null;
+      _custom = (a, b);
+      _shape = 3;
+    });
+  }
+
+  List<Widget> _details() {
+    const formats = [
+      (Icons.smartphone, 'Vertical', '9:16'),
+      (Icons.slideshow, 'Horizontal', '16:9'),
+      (Icons.crop_square, 'Square', '1:1'),
+    ];
+    return [
+      _whiteCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Project Details', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 14),
+            const Text('Project Name', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _name,
+              onChanged: (_) => setState(() {}),
+              style: const TextStyle(color: Color(0xFF1E1840)),
+            ),
+            const SizedBox(height: 16),
+            const Text('Video Format (Aspect Ratio)', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                for (var i = 0; i < 3; i++)
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: i < 2 ? 8 : 0),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => setState(() => _shape = i),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: _shape == i ? const Color(0xFFEDE8FF) : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _shape == i ? KColors.selected : const Color(0xFFDDD8EE),
+                              width: _shape == i ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(formats[i].$1, size: 24, color: const Color(0xFF3A2C8F)),
+                              const SizedBox(height: 6),
+                              Text(formats[i].$2, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                              Text(formats[i].$3, style: const TextStyle(fontSize: 11.5)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _askCustom,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _shape == 3 ? const Color(0xFFEDE8FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _shape == 3 ? KColors.selected : const Color(0xFFDDD8EE),
+                    width: _shape == 3 ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.settings_outlined, color: Color(0xFF3A2C8F)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Custom', style: TextStyle(fontWeight: FontWeight.w700)),
+                          Text(
+                            _shape == 3 ? '${_custom.$1}:${_custom.$2}' : 'Set your own size',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
 
   List<Widget> _verses() {
     final sel = _sel;
@@ -512,32 +666,112 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     ];
   }
 
-  List<Widget> _translation() => [
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Include translation'),
-          value: _withTr,
-          onChanged: (v) => setState(() => _withTr = v),
+  List<Widget> _translation() {
+    const editions = {
+      'en_sahih': ('English', 'Sahih International'),
+      'ha_gumi': ('Hausa', 'Abu Bakr Gumi'),
+    };
+    final cur = editions[_lang] ?? editions['en_sahih']!;
+    Widget label(String t) => Padding(
+          padding: const EdgeInsets.only(top: 14, bottom: 6),
+          child: Text(t, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+        );
+    Widget alignButton(String value, IconData icon) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => setState(() => _align = value),
+              child: Container(
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _align == value ? KColors.selected : const Color(0xFFF3F1FA),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: _align == value ? Colors.white : const Color(0xFF3A2C8F)),
+              ),
+            ),
+          ),
+        );
+    return [
+      _whiteCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(child: Text('Include Translation', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15))),
+                Switch(value: _withTr, onChanged: (v) => setState(() => _withTr = v)),
+              ],
+            ),
+            if (_withTr) ...[
+              label('Language'),
+              DropdownButtonFormField<String>(
+                value: _lang,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down),
+                items: [
+                  for (final e in editions.entries)
+                    DropdownMenuItem(
+                      value: e.key,
+                      child: Row(children: [const Icon(Icons.language, size: 20), const SizedBox(width: 10), Text(e.value.$1)]),
+                    ),
+                ],
+                onChanged: (v) => setState(() => _lang = v ?? _lang),
+              ),
+              label('Translation Edition'),
+              DropdownButtonFormField<String>(
+                value: _lang,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down),
+                items: [DropdownMenuItem(value: _lang, child: Text(cur.$2))],
+                onChanged: (_) {},
+              ),
+              if (_lang == 'ha_gumi')
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text('QuranEnc.com, version 1.2.2', style: TextStyle(fontSize: 11.5)),
+                ),
+              label('Display Style'),
+              Row(
+                children: [
+                  alignButton('left', Icons.format_align_left),
+                  alignButton('center', Icons.format_align_center),
+                  alignButton('right', Icons.format_align_right),
+                ],
+              ),
+              label('Preview'),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: const Color(0xFFF3F1FA), borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  children: [
+                    Text(
+                      '\u062a\u064e\u0628\u064e\u0627\u0631\u064e\u0643\u064e \u0671\u0644\u0651\u064e\u0630\u0650\u064a \u0628\u0650\u064a\u064e\u062f\u0650\u0647\u0650 \u0671\u0644\u0652\u0645\u064f\u0644\u0652\u0643\u064f',
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 22, fontFamily: rm.familyIfReady(_family, fallback: '')),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _lang == 'en_sahih' ? 'Blessed is He in whose hand is dominion' : cur.$2,
+                      textAlign: _align == 'left'
+                          ? TextAlign.left
+                          : _align == 'right'
+                              ? TextAlign.right
+                              : TextAlign.center,
+                      style: const TextStyle(fontSize: 13.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
-        if (_withTr) ...[
-          const SizedBox(height: 8),
-          RadioListTile<String>(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('English: Sahih International'),
-            value: 'en_sahih',
-            groupValue: _lang,
-            onChanged: (v) => setState(() => _lang = v!),
-          ),
-          RadioListTile<String>(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Hausa: Abu Bakr Gumi'),
-            subtitle: const Text('QuranEnc.com, version 1.2.2'),
-            value: 'ha_gumi',
-            groupValue: _lang,
-            onChanged: (v) => setState(() => _lang = v!),
-          ),
-        ],
-      ];
+      ),
+    ];
+  }
 
   List<Widget> _reciter() {
     if (_recs.isEmpty) {
@@ -545,19 +779,58 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         const Text('The reciter list is not downloaded. Open Library, Resources, then come back.'),
       ];
     }
+    String initials(String n) {
+      final parts = n.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+      if (parts.isEmpty) return '?';
+      return (parts.first[0] + (parts.length > 1 ? parts.last[0] : '')).toUpperCase();
+    }
+
     return [
       const Text(
         'Each verse recording is downloaded once when you create the video, then kept on the phone.',
         style: TextStyle(fontSize: 12, color: KColors.accent),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 10),
       for (var i = 0; i < _recs.length; i++)
-        RadioListTile<int>(
-          contentPadding: EdgeInsets.zero,
-          title: Text(_recs[i].name),
-          value: i,
-          groupValue: _rec,
-          onChanged: (v) => setState(() => _rec = v!),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => setState(() => _rec = i),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _rec == i ? KColors.selected : Colors.transparent, width: 2),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: const Color(0xFFEDE8FF),
+                    child: Text(initials(_recs[i].name),
+                        style: const TextStyle(color: Color(0xFF3A2C8F), fontWeight: FontWeight.w800)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_recs[i].name,
+                            style: const TextStyle(color: Color(0xFF1E1840), fontWeight: FontWeight.w800, fontSize: 15)),
+                        const Text("Complete Qur'an", style: TextStyle(color: Color(0xFF6B648F), fontSize: 12.5)),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _rec == i ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: _rec == i ? KColors.selected : const Color(0xFFB9B2D8),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
     ];
   }

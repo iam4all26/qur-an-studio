@@ -18,6 +18,7 @@ List<Layer> buildVerseLayers({
   required QTemplate look,
   required String fontFamily,
   String translationFont = '',
+  String translationAlign = 'center',
   String? footer,
 }) {
   // Display only: QuranEnc footnote markers such as [1] are not shown in the video.
@@ -67,6 +68,7 @@ List<Layer> buildVerseLayers({
         bold: false,
         lineHeight: 1.3,
         fontFamily: translationFont,
+        align: translationAlign,
       );
       _shade(trLayer, look);
       _fit(trLayer, tall ? look.translationTall : look.translationWide, 0.88);

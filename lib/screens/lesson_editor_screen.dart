@@ -1512,7 +1512,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     if (choice == 'narration') {
       await _openAudio();
     } else {
-      await _addAudioClip(choice == 'sfx' ? 'sfx' : 'music');
+      await _addAudioClip('voice');
     }
   }
 
@@ -1556,7 +1556,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
       startMs: start,
       durationMs: math.min(sourceMs, math.max(1000, total - start)),
       sourceMs: sourceMs,
-      volume: kind == 'music' ? 0.5 : 1.0,
+      volume: 1.0,
     );
     lesson.audioClips.add(clip);
     _selectAudio(clip.id);
@@ -2563,35 +2563,42 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     setState(() => _tab = index);
     switch (index) {
       case 0:
-        await _setBackground();
-        break;
-      case 1:
         await _addText();
         break;
+      case 1:
       case 2:
-        await _openSound();
+        await _openEdit('style');
         break;
       case 3:
-        await _setDuration();
+        await _openEdit('animation');
         break;
       case 4:
-        await _changeShape();
+        await _setBackground();
         break;
       case 5:
-        _toggleOrientation();
+        await _openSound();
+        break;
+      case 6:
+        await _openEdit('arrange');
         break;
     }
     if (mounted) setState(() => _tab = -1);
   }
 
+  /// The tools of the editor, in the order of the mockup.
+  static const List<(IconData, String)> _tools = [
+    (Icons.text_fields, 'Text'),
+    (Icons.font_download_outlined, 'Font'),
+    (Icons.palette_outlined, 'Color'),
+    (Icons.auto_awesome_outlined, 'Animation'),
+    (Icons.wallpaper, 'Background'),
+    (Icons.graphic_eq, 'Audio'),
+    (Icons.layers_outlined, 'Layers'),
+  ];
+
   Widget _bottomNav(double u) {
     final bottom = MediaQuery.of(context).padding.bottom;
-    final items = <(IconData, String)>[
-      (Icons.wallpaper, 'Background'),
-      (Icons.text_fields, 'Text'),
-      (Icons.mic_none, 'Sound'),
-      (Icons.timer_outlined, 'Time'),
-    ];
+    const items = _tools;
     return Container(
       padding: EdgeInsets.fromLTRB(_s(u, 12, 4), _s(u, 14, 4), _s(u, 12, 4), _s(u, 12, 4) + bottom),
       decoration: const BoxDecoration(
@@ -2613,7 +2620,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
                     children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
-                        padding: EdgeInsets.symmetric(horizontal: _s(u, 28, 14), vertical: _s(u, 8, 3)),
+                        padding: EdgeInsets.symmetric(horizontal: _s(u, 14, 8), vertical: _s(u, 8, 3)),
                         decoration: BoxDecoration(
                           color: _tab == i ? KColors.selected : Colors.transparent,
                           borderRadius: BorderRadius.circular(_s(u, 30, 14)),
@@ -2650,12 +2657,7 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
 
   /// Landscape: the five bottom tabs become a vertical icon-only rail on the left.
   Widget _landscapeRail(double u, EdgeInsets pad) {
-    final items = <(IconData, String)>[
-      (Icons.wallpaper, 'Background'),
-      (Icons.text_fields, 'Text'),
-      (Icons.mic_none, 'Sound'),
-      (Icons.timer_outlined, 'Time'),
-    ];
+    const items = _tools;
     return Container(
       width: 64 + pad.left,
       padding: EdgeInsets.only(left: pad.left, top: 6, bottom: 6),

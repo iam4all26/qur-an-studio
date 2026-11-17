@@ -91,7 +91,6 @@ class _VolumeSheetState extends State<_VolumeSheet> {
     final scene = widget.scene;
     final lesson = widget.lesson;
     final hasNarration = scene.narrationPath.isNotEmpty;
-    final hasMusic = lesson.musicPath.isNotEmpty;
     return SafeArea(
       child: SingleChildScrollView(child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -102,8 +101,8 @@ class _VolumeSheetState extends State<_VolumeSheet> {
             _sheetTitle('Volume and speed'),
             Text(
               hasNarration
-                  ? 'Narration of this scene ${(scene.narrationVolume * 100).round()}%'
-                  : 'This scene has no narration yet. Use Sound to record or import one.',
+                  ? 'Recitation of this scene ${(scene.narrationVolume * 100).round()}%'
+                  : 'This scene has no recitation of its own. Select the audio on the timeline to change its volume.',
             ),
             Slider(
               value: scene.narrationVolume.clamp(0.0, 1.0).toDouble(),
@@ -116,39 +115,12 @@ class _VolumeSheetState extends State<_VolumeSheet> {
                   : null,
             ),
             if (hasNarration) ...[
-              Text('Narration speed ${scene.narrationSpeed}x'.replaceAll('.0x', 'x')),
+              Text('Recitation speed ${scene.narrationSpeed}x'.replaceAll('.0x', 'x')),
               const SizedBox(height: 6),
               SpeedChips(
                 value: scene.narrationSpeed,
                 onChanged: (v) {
                   setState(() => scene.narrationSpeed = v);
-                  widget.onLive();
-                },
-              ),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              hasMusic
-                  ? 'Music of the video ${(lesson.musicVolume * 100).round()}%'
-                  : 'This video has no music yet. Use Sound to add some.',
-            ),
-            Slider(
-              value: lesson.musicVolume.clamp(0.0, 1.0).toDouble(),
-              divisions: 20,
-              onChanged: hasMusic
-                  ? (v) {
-                      setState(() => lesson.musicVolume = v);
-                      widget.onLive();
-                    }
-                  : null,
-            ),
-            if (hasMusic) ...[
-              Text('Music speed ${lesson.musicSpeed}x'.replaceAll('.0x', 'x')),
-              const SizedBox(height: 6),
-              SpeedChips(
-                value: lesson.musicSpeed,
-                onChanged: (v) {
-                  setState(() => lesson.musicSpeed = v);
                   widget.onLive();
                 },
               ),
@@ -342,7 +314,7 @@ class _LayersSheetState extends State<_LayersSheet> {
 // Extra audio clips on the Audio track
 // ---------------------------------------------------------------------------
 
-/// What to add from the Sound button. Returns narration, clip or sfx.
+/// What to add from the Audio button. Returns narration or clip.
 Future<String?> showSoundChooser(BuildContext context) {
   Widget option(BuildContext c, IconData icon, String title, String subtitle, String value) {
     return Padding(
@@ -394,11 +366,10 @@ Future<String?> showSoundChooser(BuildContext context) {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-            child: _sheetTitle('Sound'),
+            child: _sheetTitle('Audio'),
           ),
-          option(c, Icons.mic_none, 'Narration and music', 'Record or import narration, or set the video music', 'narration'),
-          option(c, Icons.library_music_outlined, 'Music or audio clip', 'Add an audio file at the playhead', 'clip'),
-          option(c, Icons.graphic_eq, 'Sound effect', 'Add a short sound at the playhead', 'sfx'),
+          option(c, Icons.mic_none, 'Record or import recitation', 'Record your voice or import a recording for this scene', 'narration'),
+          option(c, Icons.audio_file_outlined, 'Add an audio file', 'Add a recitation file at the playhead', 'clip'),
           const SizedBox(height: 8),
         ],
       ),
@@ -448,21 +419,6 @@ class _AudioClipSheetState extends State<_AudioClipSheet> {
             Text(
               'Starts at ${_seconds(clip.startMs)} and plays for ${_seconds(clip.durationMs)}. Drag it on the timeline to move it, and drag its ends to trim it.',
               style: const TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final kind in const [('music', 'Music'), ('sfx', 'Effect'), ('voice', 'Voice')])
-                  ChoiceChip(
-                    label: Text(kind.$2),
-                    selected: clip.kind == kind.$1,
-                    onSelected: (_) {
-                      setState(() => clip.kind = kind.$1);
-                      widget.onLive();
-                    },
-                  ),
-              ],
             ),
             const SizedBox(height: 8),
             Text('Speed ${clip.speed}x'.replaceAll('.0x', 'x')),
