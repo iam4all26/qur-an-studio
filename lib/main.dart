@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'app_control.dart';
 import 'app_state.dart';
 import 'screens/splash_screen.dart';
 import 'storage.dart';
@@ -46,7 +47,7 @@ class _QuranStudioAppState extends State<QuranStudioApp> {
             data: media.copyWith(
               textScaler: media.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.15),
             ),
-            child: child ?? const SizedBox.shrink(),
+            child: AppControlGate(child: child ?? const SizedBox.shrink()),
           );
         },
         home: const SplashScreen(),

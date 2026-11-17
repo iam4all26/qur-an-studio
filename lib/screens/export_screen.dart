@@ -1,3 +1,4 @@
+import '../app_control.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -216,6 +217,10 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Future<void> _start() async {
     if (_busy) return;
+    if (AppControl.instance.featureOff('export')) {
+      _set(AppControl.instance.featureMessage, failed: true);
+      return;
+    }
     final state = AppScope.read(context);
     final lesson = state.lessonById(widget.courseId, widget.lessonId);
     if (lesson == null || lesson.scenes.isEmpty) {
