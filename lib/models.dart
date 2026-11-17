@@ -311,6 +311,8 @@ class Scene {
     this.videoMuted = false,
     this.phoneFrame = false,
     this.videoFill = false,
+    this.qSurah = 0,
+    this.qAyah = 0,
     this.phoneScale = 0.9,
     this.phoneLight = false,
     this.transKind = 'none',
@@ -354,6 +356,10 @@ class Scene {
 
   /// A video clip fills the whole frame (edges are cropped) instead of fitting inside it with bars.
   bool videoFill;
+
+  /// The verse this slide shows (set by New Project; qAyah 0 is the Basmala slide). 0 = not a Qur'an slide.
+  int qSurah;
+  int qAyah;
   double phoneScale;
   bool phoneLight;
 
@@ -395,6 +401,8 @@ class Scene {
         videoMuted: videoMuted,
         phoneFrame: phoneFrame,
         videoFill: videoFill,
+        qSurah: qSurah,
+        qAyah: qAyah,
         phoneScale: phoneScale,
         phoneLight: phoneLight,
         transKind: transKind,
@@ -421,6 +429,8 @@ class Scene {
         'videoMuted': videoMuted,
         'phoneFrame': phoneFrame,
         'videoFill': videoFill,
+        'qSurah': qSurah,
+        'qAyah': qAyah,
         'phoneScale': phoneScale,
         'phoneLight': phoneLight,
         'transKind': transKind,
@@ -455,6 +465,8 @@ class Scene {
       videoMuted: json['videoMuted'] is bool ? json['videoMuted'] as bool : false,
       phoneFrame: json['phoneFrame'] is bool ? json['phoneFrame'] as bool : false,
       videoFill: json['videoFill'] is bool ? json['videoFill'] as bool : false,
+      qSurah: json['qSurah'] is num ? (json['qSurah'] as num).toInt() : 0,
+      qAyah: json['qAyah'] is num ? (json['qAyah'] as num).toInt() : 0,
       phoneScale: _num(json['phoneScale'], 0.9),
       phoneLight: json['phoneLight'] is bool ? json['phoneLight'] as bool : false,
       transKind: _str(json['transKind'], 'none'),

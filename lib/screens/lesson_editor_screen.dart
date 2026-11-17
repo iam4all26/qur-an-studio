@@ -1,3 +1,4 @@
+import '../quran/change_reciter.dart';
 import '../editor/side_sheet.dart';
 import 'dart:async';
 import 'dart:io';
@@ -1663,7 +1664,13 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
   Future<void> _openSound() async {
     final choice = await showSoundChooser(context);
     if (choice == null || !mounted) return;
-    if (choice == 'narration') {
+    if (choice == 'reciter') {
+      final lesson = _lesson();
+      if (lesson == null) return;
+      _pause();
+      final changed = await changeReciter(context, lesson);
+      if (changed && mounted) await _commit();
+    } else if (choice == 'narration') {
       await _openAudio();
     } else {
       await _addAudioClip('voice');

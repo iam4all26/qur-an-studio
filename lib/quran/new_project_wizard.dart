@@ -322,7 +322,13 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           translationAlign: _align,
           footer: _showFooter && it.label.isNotEmpty ? it.label : null,
         );
-        lesson.scenes.addAll(plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah)));
+        final made = plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah));
+        for (final sc in made) {
+          // Remember which verse this slide shows (the Basmala slide has an empty label and ayah 0).
+          sc.qSurah = it.label.isEmpty ? surahNo : int.parse(it.audioCode.substring(0, 3));
+          sc.qAyah = it.label.isEmpty ? 0 : int.parse(it.audioCode.substring(3));
+        }
+        lesson.scenes.addAll(made);
         if (durations[i] > 0) {
           lesson.audioClips.add(AudioClip(
             id: newId(),

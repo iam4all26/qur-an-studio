@@ -314,7 +314,7 @@ class _LayersSheetState extends State<_LayersSheet> {
 // Extra audio clips on the Audio track
 // ---------------------------------------------------------------------------
 
-/// What to add from the Audio button. Returns narration or clip.
+/// What to add from the Audio button. Returns narration, clip or reciter.
 Future<String?> showSoundChooser(BuildContext context) {
   Widget option(BuildContext c, IconData icon, String title, String subtitle, String value) {
     return Padding(
@@ -370,6 +370,7 @@ Future<String?> showSoundChooser(BuildContext context) {
           ),
           option(c, Icons.mic_none, 'Record or import recitation', 'Record your voice or import a recording for this scene', 'narration'),
           option(c, Icons.audio_file_outlined, 'Add an audio file', 'Add a recitation file at the playhead', 'clip'),
+          option(c, Icons.record_voice_over_outlined, 'Change reciter', 'Replace the recitation of the whole video', 'reciter'),
           const SizedBox(height: 8),
         ],
       ),
