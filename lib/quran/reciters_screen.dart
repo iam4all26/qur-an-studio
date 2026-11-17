@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:kainuwa_encoder/kainuwa_encoder.dart';
 
 import '../theme.dart';
+import 'reciter_media.dart';
 import 'resource_manager.dart' show ResourceManager, kDataBase;
 
 class _R {
-  _R(this.id, this.name, this.folder, [this.country = '', this.image = '']);
+  _R(this.id, this.name, this.folder, [this.country = '', this.image = '', this.urlTemplate = '']);
+  final String urlTemplate;
   String image;
   String local = ''; // path of the saved picture on this phone, empty until downloaded
   String country;
@@ -58,7 +60,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
     if (e != null && rm.isReady('reciters')) {
       final j = jsonDecode(await File(await rm.pathOf(e)).readAsString()) as Map<String, dynamic>;
       for (final r in (j['reciters'] as List)) {
-        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}', '${r['country'] ?? ''}', '${r['image'] ?? ''}'));
+        if ((r as Map)['verified'] == true) list.add(_R('${r['id']}', '${r['name']}', '${r['folder']}', '${r['country'] ?? ''}', '${r['image'] ?? ''}', '${r['per_ayah_url'] ?? ''}'));
       }
     }
     final fav = File('$_root/favorites.json');
@@ -315,6 +317,12 @@ class _RecitersScreenState extends State<RecitersScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    ReciterPreview.stop();
+    super.dispose();
+  }
+
   String _initials(String name) {
     final clean = name.replaceAll(RegExp(r'\([^)]*\)'), ' ').trim();
     final parts = clean.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
@@ -335,38 +343,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: const Color(0xFFE6DFFB),
-            child: r.image.isEmpty && r.local.isEmpty
-                ? Text(
-                    _initials(r.name),
-                    style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
-                  )
-                : ClipOval(
-                    child: r.local.isNotEmpty
-                        ? Image.file(
-                            File(r.local),
-                            width: 44,
-                            height: 44,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Text(
-                              _initials(r.name),
-                              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
-                            ),
-                          )
-                        : Image.network(
-                            '$kDataBase${r.image}',
-                            width: 44,
-                            height: 44,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Text(
-                              _initials(r.name),
-                              style: const TextStyle(color: dark, fontWeight: FontWeight.w700, fontSize: 14),
-                            ),
-                          ),
-                  ),
-          ),
+          ReciterAvatar(id: r.id, name: r.name, image: r.image, radius: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -374,7 +351,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
               children: [
                 Text(
                   r.name,
-                  maxLines: 1,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: dark),
                 ),
@@ -389,6 +366,7 @@ class _RecitersScreenState extends State<RecitersScreen> {
               ],
             ),
           ),
+          ReciterPreviewButton(id: r.id, urlTemplate: r.urlTemplate),
           if (r.downloaded > 0)
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Color(0xFF6B6785)),
