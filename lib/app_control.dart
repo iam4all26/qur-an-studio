@@ -106,7 +106,8 @@ class AppControl extends ChangeNotifier {
       }
     } catch (_) {}
     notifyListeners();
-    await refresh();
+    // Every start reads the file, so a change you publish is seen at the next launch.
+    await refresh(force: true);
   }
 
   Map<String, dynamic> _raw = {};
@@ -127,7 +128,7 @@ class AppControl extends ChangeNotifier {
   /// Reads the control file. Without internet the saved settings stay in force.
   Future<void> refresh({bool force = false}) async {
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (!force && now - _fetchedAt < const Duration(hours: 6).inMilliseconds) return;
+    if (!force && now - _fetchedAt < const Duration(minutes: 30).inMilliseconds) return;
     checking = true;
     notifyListeners();
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
