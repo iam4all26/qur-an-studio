@@ -210,19 +210,40 @@ class AppControl extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Opens the Play Store page of the app (the Play Store app first, then the web page).
+  bool opening = false;
+  String storeNote = '';
+
+  /// Opens the Play Store page of the app. The phone's Play Store app is tried first (through the
+  /// app's own plugin), then any app that opens market:// links, then the web page. The button shows
+  /// "Opening..." and, if nothing could be opened, a message tells the user what to do.
   Future<void> openStore() async {
+    if (opening) return;
+    opening = true;
+    storeNote = '';
+    notifyListeners();
+    var id = packageName;
+    var web = 'https://play.google.com/store/apps/details?id=$id';
     final custom = config.playUrl;
-    final id = packageName;
-    final targets = <Uri>[
-      if (custom.isNotEmpty) Uri.parse(custom) else Uri.parse('market://details?id=$id'),
-      Uri.parse('https://play.google.com/store/apps/details?id=$id'),
-    ];
-    for (final u in targets) {
+    if (custom.isNotEmpty) {
+      web = custom;
+      final fromLink = Uri.tryParse(custom)?.queryParameters['id'];
+      if (fromLink != null && fromLink.isNotEmpty) id = fromLink;
+    }
+    var how = 'failed';
+    try {
+      how = await KainuwaEncoder.openStore(id, web);
+    } catch (_) {}
+    if (how == 'failed') {
       try {
-        if (await launchUrl(u, mode: LaunchMode.externalApplication)) return;
+        if (await launchUrl(Uri.parse(web), mode: LaunchMode.externalApplication)) how = 'web';
       } catch (_) {}
     }
+    if (how == 'failed') {
+      storeNote = 'Google Play could not be opened. Please open the Play Store app and search for Qur\'an Studio.';
+    }
+    await Future<void>.delayed(const Duration(seconds: 2));
+    opening = false;
+    notifyListeners();
   }
 }
 
@@ -306,15 +327,19 @@ class _Blocked extends StatelessWidget {
                 const SizedBox(height: 24),
                 if (update)
                   FilledButton.icon(
-                    onPressed: ctl.openStore,
+                    onPressed: ctl.opening ? null : ctl.openStore,
                     icon: const Icon(Icons.shop_outlined),
-                    label: const Text('Update on Google Play'),
+                    label: Text(ctl.opening ? 'Opening Google Play...' : 'Update on Google Play'),
                   )
                 else
                   OutlinedButton(
                     onPressed: ctl.checking ? null : () => ctl.refresh(force: true),
                     child: Text(ctl.checking ? 'Checking...' : 'Try again'),
                   ),
+                if (ctl.storeNote.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Text(ctl.storeNote, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: KColors.accent)),
+                ],
               ],
             ),
           ),

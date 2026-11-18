@@ -306,6 +306,9 @@ public class KainuwaEncoderPlugin
             case "pick":
                 pick((String) call.argument("mime"), result);
                 break;
+            case "openStore":
+                openStore((String) call.argument("package"), (String) call.argument("url"), result);
+                break;
             case "exportScene":
                 exportScene(call, result);
                 break;
@@ -1204,6 +1207,48 @@ public class KainuwaEncoderPlugin
         mainHandler.removeCallbacks(progressTicker);
         mainHandler.postDelayed(progressTicker, 500);
         transformer.start(composition, outputPath);
+    }
+
+    // ---- Google Play ----
+
+    /** Opens the app page in the Play Store app; falls back to any handler of market:// and then the web page. */
+    private void openStore(String pkg, String webUrl, MethodChannel.Result result) {
+        final String id = (pkg == null || pkg.isEmpty()) ? "com.kainuwa.quranstudio" : pkg;
+        final String web = (webUrl == null || webUrl.isEmpty())
+                ? "https://play.google.com/store/apps/details?id=" + id : webUrl;
+        final Uri market = Uri.parse("market://details?id=" + id);
+        // 1) the Play Store app itself
+        if (startView(market, "com.android.vending")) {
+            result.success("play");
+            return;
+        }
+        // 2) any app that opens market:// links
+        if (startView(market, null)) {
+            result.success("market");
+            return;
+        }
+        // 3) the web page in any browser
+        if (startView(Uri.parse(web), null)) {
+            result.success("web");
+            return;
+        }
+        result.success("failed");
+    }
+
+    private boolean startView(Uri uri, String targetPackage) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            if (targetPackage != null) intent.setPackage(targetPackage);
+            if (activity != null) {
+                activity.startActivity(intent);
+            } else {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                appContext.startActivity(intent);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // ---- Save to Movies ----

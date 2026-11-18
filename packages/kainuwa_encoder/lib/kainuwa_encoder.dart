@@ -180,6 +180,12 @@ class KainuwaEncoder {
     return _progress.stream;
   }
 
+  /// Opens the app page in the Play Store app. Returns play, market, web or failed.
+  static Future<String> openStore(String package, String url) async {
+    _init();
+    return await _channel.invokeMethod<String>('openStore', {'package': package, 'url': url}) ?? 'failed';
+  }
+
   /// Opens the system file picker for images. Returns a local copy path, or null if cancelled.
   static Future<String?> pickImage() {
     _init();
