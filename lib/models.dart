@@ -568,6 +568,10 @@ class Lesson {
     List<AudioClip>? audioClips,
     this.aspectW = 16,
     this.aspectH = 9,
+    this.qTemplate = '',
+    this.qLang = '',
+    this.qAlign = 'center',
+    this.qFooter = true,
   })  : scenes = scenes ?? <Scene>[],
         hiddenTracks = hiddenTracks ?? <String>{},
         audioClips = audioClips ?? <AudioClip>[];
@@ -579,6 +583,15 @@ class Lesson {
   /// The shape of the video, for example 16 and 9, or 9 and 16 for TikTok.
   int aspectW;
   int aspectH;
+
+  /// How a New Project video was made, so the timeline can be rebuilt (change reciter).
+  /// qTemplate is empty for videos made before this was stored.
+  String qTemplate;
+
+  /// Translation edition id (en_sahih, ha_gumi) or empty for none.
+  String qLang;
+  String qAlign;
+  bool qFooter;
 
   double get aspect => aspectW / aspectH;
   (double, double) get stageSize => stageSizeFor(aspectW, aspectH);
@@ -608,6 +621,10 @@ class Lesson {
         'musicFade': musicFade,
         'aspectW': aspectW,
         'aspectH': aspectH,
+        'qTemplate': qTemplate,
+        'qLang': qLang,
+        'qAlign': qAlign,
+        'qFooter': qFooter,
         'hiddenTracks': hiddenTracks.toList(),
         'audioClips': audioClips.map((c) => c.toJson()).toList(),
         'scenes': scenes.map((s) => s.toJson()).toList(),
@@ -630,6 +647,10 @@ class Lesson {
       musicFade: json['musicFade'] is bool ? json['musicFade'] as bool : true,
       aspectW: _int(json['aspectW'], 16).clamp(1, 99).toInt(),
       aspectH: _int(json['aspectH'], 9).clamp(1, 99).toInt(),
+      qTemplate: _str(json['qTemplate'], ''),
+      qLang: _str(json['qLang'], ''),
+      qAlign: _str(json['qAlign'], 'center'),
+      qFooter: json['qFooter'] is bool ? json['qFooter'] as bool : true,
       hiddenTracks: json['hiddenTracks'] is List
           ? (json['hiddenTracks'] as List).whereType<String>().toSet()
           : <String>{},

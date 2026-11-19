@@ -71,6 +71,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   List<QTemplate> _tpls = [];
   int _look = 0;
   bool _busy = false;
+  int _done = 0;
+  int _total = 0;
   String _status = '';
   String? _error;
 
@@ -127,6 +129,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         return _sel != null;
       case 3:
         return _recs.isNotEmpty;
+      case 4:
+        return _bg.template || _bg.items.isNotEmpty;
       default:
         return true;
     }
@@ -240,7 +244,9 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     setState(() {
       _busy = true;
       _error = null;
-      _status = 'Reading the Qur\'an data...';
+      _total = 0;
+      _done = 0;
+      _status = 'Reading';
     });
     var stageUsed = false;
     try {
@@ -281,19 +287,24 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       final rec = _recs[_rec];
       final paths = <String>[];
       final durations = <int>[];
+      final trims = <(int, int)>[];
+      if (mounted) {
+        setState(() {
+          _total = items.length;
+          _done = 0;
+          _status = 'Downloading';
+        });
+      }
       for (var i = 0; i < items.length; i++) {
-        if (mounted) setState(() => _status = 'Preparing audio ${i + 1} of ${items.length}...');
         final p = await _audio(rec, items[i].audioCode);
         paths.add(p);
-        durations.add(await KainuwaEncoder.audioDuration(p));
+        final total = await KainuwaEncoder.audioDuration(p);
+        durations.add(total);
+        trims.add(await _trim(p, total));
+        if (mounted) setState(() => _done = i + 1);
       }
 
-      final trims = <(int, int)>[];
-      for (var i = 0; i < items.length; i++) {
-        trims.add(await _trim(paths[i], durations[i]));
-      }
-
-      if (mounted) setState(() => _status = 'Building scenes...');
+      if (mounted) setState(() => _status = 'Building');
       final plan = await BackgroundPlan.create(_bg);
       final bgProblem = plan.problem;
       if (bgProblem != null) throw StateError(bgProblem);
@@ -302,6 +313,11 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       final ids = await state.addVideo(title: _name.text.trim(), aspectW: aw, aspectH: ah);
       final lesson = state.lessonById(ids.$1, ids.$2);
       if (lesson == null) throw StateError('The new project was not found.');
+      final lookNow = _tpls[_look];
+      lesson.qTemplate = lookNow.id;
+      lesson.qLang = _withTr ? _lang : '';
+      lesson.qAlign = _align;
+      lesson.qFooter = _showFooter;
 
       Stage.use(aw, ah);
       stageUsed = true;
@@ -405,12 +421,6 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                   if (_step == 2) ..._translation(),
                   if (_step == 3) ..._reciter(),
                   if (_step == 4) ..._template(),
-                  if (_busy) ...[
-                    const SizedBox(height: 16),
-                    const LinearProgressIndicator(),
-                    const SizedBox(height: 8),
-                    Text(_status),
-                  ],
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -478,7 +488,9 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         child: SizedBox(
           width: double.infinity,
           height: 52,
-          child: FilledButton(
+          child: _busy && last
+              ? _progressButton()
+              : FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: KColors.selected,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -504,6 +516,43 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// The Create video button while the video is being made: it fills like a progress bar and
+  /// shows how many recordings are done, for example "Downloading 3/12".
+  Widget _progressButton() {
+    final reading = _total == 0;
+    final value = _total == 0 ? null : (_done / _total).clamp(0.0, 1.0).toDouble();
+    final text = _status == 'Building'
+        ? 'Building video...'
+        : reading
+            ? 'Reading the Qur\'an data...'
+            : 'Downloading $_done/$_total';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(color: KColors.surface),
+          if (_status == 'Building')
+            Container(color: KColors.selected)
+          else if (value != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: value,
+                heightFactor: 1,
+                child: Container(color: KColors.selected),
+              ),
+            )
+          else
+            const LinearProgressIndicator(backgroundColor: Colors.transparent),
+          Center(
+            child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
@@ -867,6 +916,25 @@ onChanged: (v) => setState(() => _showFooter = v),
       ),
       BackgroundChooser(choice: _bg, onChanged: (c) => setState(() => _bg = c)),
       const SizedBox(height: 12),
+      if (!_bg.template) ...[
+        const Text('Text style', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<int>(
+          value: _look.clamp(0, _tpls.length - 1).toInt(),
+          isExpanded: true,
+          items: [
+            for (var i = 0; i < _tpls.length; i++) DropdownMenuItem(value: i, child: Text(_tpls[i].name)),
+          ],
+          onChanged: (v) => setState(() => _look = v ?? _look),
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Text('Fonts, colours and sizes of the chosen template are used for the text. '
+              'Pick the Template tab above to see the template pictures.',
+              style: TextStyle(fontSize: 11.5, color: Colors.white60)),
+        ),
+      ],
+      if (_bg.template) ...[
       const Text('Template', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
       const SizedBox(height: 8),
       GridView.builder(
@@ -920,6 +988,7 @@ onChanged: (v) => setState(() => _showFooter = v),
           );
         },
       ),
+      ],
     ];
   }
 }

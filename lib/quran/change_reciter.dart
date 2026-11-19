@@ -6,9 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:kainuwa_encoder/kainuwa_encoder.dart';
 
 import '../models.dart';
+import '../stage_shape.dart';
 import '../theme.dart';
+import 'background_choice.dart';
+import 'quran_db.dart';
 import 'reciter_media.dart';
 import 'resource_manager.dart';
+import 'templates.dart';
+import 'verse_layers.dart';
 
 class _Choice {
   const _Choice(this.id, this.name, this.folder, this.urlTemplate, this.country, this.image);
@@ -57,6 +62,15 @@ Future<bool> changeReciter(BuildContext context, Lesson lesson) async {
   await ReciterPreview.stop();
   if (pick == null || !context.mounted) return false;
 
+  // Reciters speak at different speeds, so offer to rebuild the whole timeline.
+  final redo = await _askRedo(context);
+  if (redo == null || !context.mounted) return false;
+  _Settings? settings;
+  if (redo) {
+    settings = await _settingsFor(context, lesson);
+    if (settings == null || !context.mounted) return false;
+  }
+
   final status = ValueNotifier<String>('Starting...');
   showDialog<void>(
     context: context,
@@ -79,7 +93,11 @@ Future<bool> changeReciter(BuildContext context, Lesson lesson) async {
 
   String? error;
   try {
-    await _apply(lesson, pick, status);
+    if (redo) {
+      await _rebuild(lesson, pick, settings!, status);
+    } else {
+      await _apply(lesson, pick, status);
+    }
   } catch (e) {
     error = '$e';
   }
@@ -90,6 +108,128 @@ Future<bool> changeReciter(BuildContext context, Lesson lesson) async {
     return false;
   }
   return true;
+}
+
+/// true = redo the timeline, false = keep the slides and only re-time them, null = cancel.
+Future<bool?> _askRedo(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (c) => AlertDialog(
+      title: const Text('Redo the timeline?'),
+      content: const Text(
+        'Some reciters are faster and some are slower. Redo the timeline entirely to build the video '
+        'again as a new project, with the same verses, translation and background, timed to the new '
+        'voice. Changes you made by hand to the slides are lost.\n\n'
+        'Or keep your slides and only stretch their timing to the new voice.',
+        style: TextStyle(fontSize: 14),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
+        OutlinedButton(onPressed: () => Navigator.pop(c, false), child: const Text('Keep my edits')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Redo timeline')),
+      ],
+    ),
+  );
+}
+
+class _Settings {
+  _Settings(this.look, this.lang, this.align, this.footer);
+  final QTemplate look;
+  final String lang; // en_sahih, ha_gumi or '' for none
+  final String align;
+  final bool footer;
+}
+
+bool _isArabic(String t) => RegExp(r'[\u0600-\u06FF]').hasMatch(t);
+
+/// The settings the video was made with. Videos made before they were stored are read from their
+/// slides (best guess) and the person can correct the guess.
+Future<_Settings?> _settingsFor(BuildContext context, Lesson lesson) async {
+  final tpls = await QTemplates.load();
+  if (tpls.isEmpty) return null;
+  if (lesson.qTemplate.isNotEmpty) {
+    final i = tpls.indexWhere((t) => t.id == lesson.qTemplate);
+    if (i >= 0) return _Settings(tpls[i], lesson.qLang, lesson.qAlign, lesson.qFooter);
+  }
+  // Guess from the first verse slide.
+  final scene = lesson.scenes.firstWhere((s) => s.qAyah > 0, orElse: () => lesson.scenes.first);
+  var look = tpls.first;
+  var lang = '';
+  var align = 'center';
+  var footer = false;
+  final label = RegExp(r'\d+:\d+\s*$');
+  var arabicSeen = false;
+  for (final l in scene.layers) {
+    if (l.type != 'text' || l.id.startsWith('overlay_')) continue;
+    if (_isArabic(l.text)) {
+      if (!arabicSeen) {
+        arabicSeen = true;
+        final m = tpls.indexWhere((t) => t.arabicColor == l.color);
+        if (m >= 0) look = tpls[m];
+      }
+    } else if (label.hasMatch(l.text.trim())) {
+      footer = true;
+    } else {
+      lang = 'en_sahih';
+      align = l.align;
+    }
+  }
+  if (!context.mounted) return null;
+  var tIndex = tpls.indexOf(look);
+  return showDialog<_Settings>(
+    context: context,
+    builder: (c) => StatefulBuilder(
+      builder: (c, setD) => AlertDialog(
+        title: const Text('Rebuild settings'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This video was made before its settings were saved. Check them; the same verses and '
+                'background are used.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                value: tIndex,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Template (text style)'),
+                items: [for (var i = 0; i < tpls.length; i++) DropdownMenuItem(value: i, child: Text(tpls[i].name))],
+                onChanged: (v) => setD(() => tIndex = v ?? tIndex),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: lang,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Translation'),
+                items: const [
+                  DropdownMenuItem(value: '', child: Text('None')),
+                  DropdownMenuItem(value: 'en_sahih', child: Text('English - Sahih International')),
+                  DropdownMenuItem(value: 'ha_gumi', child: Text('Hausa - Abu Bakr Gumi')),
+                ],
+                onChanged: (v) => setD(() => lang = v ?? lang),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Show surah and verse at the bottom'),
+                value: footer,
+                onChanged: (v) => setD(() => footer = v),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, _Settings(tpls[tIndex], lang, align, footer)),
+            child: const Text('Rebuild'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 Future<List<_Choice>> _loadChoices() async {
@@ -245,28 +385,10 @@ Future<void> _apply(Lesson lesson, _Choice rec, ValueNotifier<String> status) as
     }
   }
 
-  final base = await KainuwaEncoder.filesDir();
-  final dir = Directory('$base/quran/audio');
-  if (!await dir.exists()) await dir.create(recursive: true);
-
-  // Download and measure everything first, so a failure changes nothing.
-  final paths = <String>[];
-  final sources = <int>[];
-  final trims = <(int, int)>[];
-  for (var i = 0; i < groups.length; i++) {
-    status.value = 'Preparing audio ${i + 1} of ${groups.length}...';
-    final code = _code(groups[i].first.qSurah, groups[i].first.qAyah);
-    final file = File('${dir.path}/${rec.folder}_$code.mp3');
-    if (!await file.exists() || await file.length() == 0) {
-      final url = rec.urlTemplate.replaceAll('{SSS}', code.substring(0, 3)).replaceAll('{AAA}', code.substring(3));
-      await file.writeAsBytes(await _get(url), flush: true);
-    }
-    final total = await KainuwaEncoder.audioDuration(file.path);
-    if (total <= 0) throw StateError('The recording for $code could not be read.');
-    paths.add(file.path);
-    sources.add(total);
-    trims.add(await _trim(file.path, total));
-  }
+  final prep = await _prepare([for (final g in groups) (g.first.qSurah, g.first.qAyah)], rec, status);
+  final paths = prep.paths;
+  final sources = prep.sources;
+  final trims = prep.trims;
 
   status.value = 'Re-timing the slides...';
   final clips = <AudioClip>[];
@@ -316,4 +438,171 @@ Future<void> _apply(Lesson lesson, _Choice rec, ValueNotifier<String> status) as
 
   lesson.audioClips.removeWhere((c) => c.kind == 'voice' && c.label == 'Verse');
   lesson.audioClips.addAll(clips);
+}
+
+class _Prepared {
+  _Prepared(this.paths, this.sources, this.trims);
+  final List<String> paths;
+  final List<int> sources;
+  final List<(int, int)> trims;
+}
+
+/// Downloads (once), measures and trims the recording of every (surah, ayah) in order.
+/// Nothing in the project is changed here, so a failure leaves the video as it was.
+Future<_Prepared> _prepare(List<(int, int)> verses, _Choice rec, ValueNotifier<String> status) async {
+  final base = await KainuwaEncoder.filesDir();
+  final dir = Directory('$base/quran/audio');
+  if (!await dir.exists()) await dir.create(recursive: true);
+  final paths = <String>[];
+  final sources = <int>[];
+  final trims = <(int, int)>[];
+  for (var i = 0; i < verses.length; i++) {
+    status.value = 'Downloading ${i + 1}/${verses.length}';
+    final code = _code(verses[i].$1, verses[i].$2);
+    final file = File('${dir.path}/${rec.folder}_$code.mp3');
+    if (!await file.exists() || await file.length() == 0) {
+      final url = rec.urlTemplate.replaceAll('{SSS}', code.substring(0, 3)).replaceAll('{AAA}', code.substring(3));
+      await file.writeAsBytes(await _get(url), flush: true);
+    }
+    final total = await KainuwaEncoder.audioDuration(file.path);
+    if (total <= 0) throw StateError('The recording for $code could not be read.');
+    paths.add(file.path);
+    sources.add(total);
+    trims.add(await _trim(file.path, total));
+  }
+  return _Prepared(paths, sources, trims);
+}
+
+/// Builds the whole timeline again, as New Project would, with the new reciter.
+Future<void> _rebuild(Lesson lesson, _Choice rec, _Settings st, ValueNotifier<String> status) async {
+  final order = <(int, int)>[];
+  for (final s in lesson.scenes) {
+    final k = (s.qSurah, s.qAyah);
+    if (order.isEmpty || order.last != k) order.add(k);
+  }
+
+  final rm = ResourceManager.instance;
+  await rm.load();
+  await rm.loadFonts();
+  final db = await QuranDb.open();
+  if (db == null) throw StateError('The Qur\'an data is not downloaded. Open More, Resources.');
+  List<String>? tr;
+  if (st.lang.isNotEmpty) {
+    final e = rm.byId(st.lang);
+    if (e == null || !rm.isReady(st.lang)) throw StateError('The translation is not downloaded. Open More, Resources.');
+    final j = jsonDecode(await File(await rm.pathOf(e)).readAsString()) as Map<String, dynamic>;
+    tr = [for (final v in (j['verses'] as List)) '$v'];
+    if (tr.length != 6236) throw StateError('The translation file is incomplete.');
+  }
+  final surahs = {for (final x in await db.surahs()) x.number: x};
+  final offsets = <int, int>{};
+
+  // Keep the backgrounds and the dark overlay of the old timeline.
+  final choice = BgChoice.fromScenes(lesson.scenes);
+  String? keepAsset;
+  if (lesson.scenes.first.bgType == 'asset') keepAsset = lesson.scenes.first.bgValue;
+  var overlay = 0.0;
+  for (final s in lesson.scenes) {
+    for (final l in s.layers) {
+      if (l.id.startsWith('overlay_')) overlay = math.max(overlay, l.opacity);
+    }
+  }
+
+  // Text first (nothing is changed until everything has worked).
+  final arabic = <String>[];
+  final trans = <String>[];
+  final labels = <String>[];
+  final basmala = await db.basmala();
+  for (final (s, a) in order) {
+    if (a == 0) {
+      arabic.add(basmala);
+      trans.add(tr == null ? '' : tr[0]);
+      labels.add('');
+    } else {
+      final rows = await db.verses(s, a, a);
+      if (rows.isEmpty) throw StateError('Verse $s:$a was not found.');
+      arabic.add(rows.first.text);
+      final off = offsets[s] ?? (offsets[s] = await db.offsetOf(s));
+      trans.add(tr == null ? '' : tr[off + a - 1]);
+      labels.add('${surahs[s]?.nameEn ?? 'Surah $s'} - $s:$a');
+    }
+  }
+
+  final prep = await _prepare(order, rec, status);
+  status.value = 'Building video...';
+
+  final plan = await BackgroundPlan.create(choice);
+  final problem = plan.problem;
+  if (problem != null) throw StateError(problem);
+
+  final fontOk = rm.isReady('AmiriQuran-Regular');
+  final newScenes = <Scene>[];
+  final clips = <AudioClip>[];
+  Stage.use(lesson.aspectW, lesson.aspectH);
+  try {
+    final tall = lesson.aspectH > lesson.aspectW;
+    var pos = 0;
+    for (var i = 0; i < order.length; i++) {
+      final dur = prep.trims[i].$2 - prep.trims[i].$1;
+      final layers = buildVerseLayers(
+        arabic: arabic[i],
+        translation: trans[i],
+        tall: tall,
+        durationMs: dur,
+        look: st.look,
+        fontFamily: rm.familyIfReady(st.look.arabicFont, fallback: fontOk ? 'Amiri Quran' : ''),
+        translationFont: rm.familyIfReady(st.look.translationFont),
+        translationAlign: st.align,
+        footer: st.footer && labels[i].isNotEmpty ? labels[i] : null,
+      );
+      final made = plan.scenesFor(
+        durationMs: dur,
+        layers: layers,
+        imageAsset: keepAsset ?? st.look.assetFor(lesson.aspectW, lesson.aspectH),
+      );
+      for (final sc in made) {
+        sc.qSurah = order[i].$1;
+        sc.qAyah = order[i].$2;
+        if (overlay > 0.001) {
+          sc.layers.insert(
+            0,
+            Layer(
+              id: 'overlay_${sc.id}',
+              type: 'shape',
+              cx: 0.5,
+              cy: 0.5,
+              w: 1.0,
+              h: 1.0,
+              color: 0xFF000000,
+              opacity: overlay,
+            ),
+          );
+        }
+      }
+      newScenes.addAll(made);
+      clips.add(AudioClip(
+        id: newId(),
+        path: prep.paths[i],
+        label: 'Verse',
+        kind: 'voice',
+        startMs: pos,
+        trimMs: prep.trims[i].$1,
+        durationMs: dur,
+        sourceMs: prep.sources[i],
+      ));
+      pos += dur;
+    }
+  } finally {
+    Stage.reset();
+  }
+
+  lesson.scenes
+    ..clear()
+    ..addAll(newScenes);
+  lesson.audioClips.removeWhere((c) => c.kind == 'voice' && c.label == 'Verse');
+  lesson.audioClips.addAll(clips);
+  lesson.qTemplate = st.look.id;
+  lesson.qLang = st.lang;
+  lesson.qAlign = st.align;
+  lesson.qFooter = st.footer;
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import 'about_screen.dart';
+import 'ai_settings_screen.dart';
 import 'resources_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -54,6 +55,8 @@ class MoreScreen extends StatelessWidget {
               "Qur'an text, translations and fonts", const ResourcesScreen()),
           _nav(context, Icons.movie_outlined, 'Video backgrounds', 'Moving backgrounds for your videos',
               const BackgroundsScreen()),
+          _nav(context, Icons.auto_awesome_outlined, 'AI Auto Sync', 'API keys for syncing your recordings',
+              const AiSettingsScreen()),
           _nav(context, Icons.info_outline, 'About and credits', 'Sources and licences',
               const AboutScreen()),
           const SizedBox(height: 16),

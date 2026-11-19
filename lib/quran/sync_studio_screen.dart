@@ -12,6 +12,8 @@ import '../scene_canvas.dart';
 import '../screens/lesson_editor_screen.dart';
 import '../stage_shape.dart';
 import '../theme.dart';
+import 'ai_settings_screen.dart';
+import 'ai_sync.dart';
 import 'quran_db.dart';
 import 'quran_library_screen.dart';
 import 'resource_manager.dart';
@@ -279,18 +281,94 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
     });
   }
 
-  void _autoSync() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Auto Sync'),
-        content: const Text(
-          'There is no timing data for this recording yet, so it cannot be synced automatically. '
-          'Use Set Start and Set End. Timing import for known reciters comes in a later update.',
+  Future<void> _autoSync() async {
+    await _pause();
+    final cfg = AiConfig.instance;
+    await cfg.load();
+    final provider = cfg.active;
+    if (!mounted) return;
+    if (provider == null) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Auto Sync'),
+          content: const Text(
+            'Auto Sync uses an AI service to find where each verse starts. Add the API key of a service '
+            'you have an account with (OpenAI, Groq, Gemini or another).',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Not now')),
+            FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Add API key')),
+          ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
+      );
+      if (go == true && mounted) {
+        await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AiSettingsScreen()));
+      }
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Auto Sync'),
+        content: Text(
+          'The recording will be sent to ${provider.name} (model ${cfg.modelOf(provider.id)}) to find where each '
+          'verse starts. The service may charge you for it. Your current marks are replaced; you can then adjust them.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Send and sync')),
+        ],
       ),
     );
+    if (ok != true || !mounted) return;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: const Text('Auto Sync'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const LinearProgressIndicator(),
+              const SizedBox(height: 12),
+              Text('Waiting for ${provider.name}. This can take a minute or more.'),
+            ],
+          ),
+        ),
+      ),
+    );
+    AiSyncResult? result;
+    String? failure;
+    try {
+      result = await AiSync.run(
+        provider: provider,
+        config: cfg,
+        audioPath: _audio,
+        totalMs: _total,
+        verses: [for (final r in _rows) r.text],
+      );
+    } catch (e) {
+      failure = '$e';
+    }
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    final r = result;
+    if (r == null || r.boundaries.length != _rows.length + 1) {
+      setState(() => _note = 'Auto Sync failed: ${failure ?? 'unexpected answer'}');
+      return;
+    }
+    setState(() {
+      _b = r.boundaries;
+      _cur = 0;
+      _pos = _b[0];
+      _win = 0;
+      _note = r.note;
+    });
   }
 
   String _fmt(int ms) {
