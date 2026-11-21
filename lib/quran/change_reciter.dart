@@ -544,7 +544,9 @@ Future<void> _rebuild(Lesson lesson, _Choice rec, _Settings st, ValueNotifier<St
     var pos = 0;
     for (var i = 0; i < order.length; i++) {
       final dur = prep.trims[i].$2 - prep.trims[i].$1;
+      final pauses = await versePauses(prep.paths[i], prep.sources[i], prep.trims[i].$1, dur);
       final layers = buildVerseLayers(
+        pauses: pauses,
         arabic: arabic[i],
         translation: trans[i],
         tall: tall,

@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:kainuwa_encoder/kainuwa_encoder.dart';
+
 import '../models.dart';
 import '../scene_canvas.dart';
 import 'templates.dart';
@@ -20,29 +22,81 @@ List<Layer> buildVerseLayers({
   String translationFont = '',
   String translationAlign = 'center',
   String? footer,
+  int endMark = 0,
+  List<int> pauses = const [],
 }) {
   // Display only: QuranEnc footnote markers such as [1] are not shown in the video.
   translation = translation.replaceAll(RegExp(r'\s*\[\d+\]'), '');
   final aWords = arabic.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+  // End-of-verse sign (U+06DD) followed by the verse number in Arabic-Indic digits.
+  if (endMark > 0 && aWords.isNotEmpty) {
+    const digits = ['\u0660', '\u0661', '\u0662', '\u0663', '\u0664', '\u0665', '\u0666', '\u0667', '\u0668', '\u0669'];
+    final num = '$endMark'.split('').map((c) => digits[int.parse(c)]).join();
+    aWords[aWords.length - 1] = '${aWords.last}\u00A0\u06DD$num';
+  }
   final tWords = translation.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final cap = tall ? 14 : 18;
-  final pages = math.max(1, (aWords.length / cap).ceil());
+  final trCap = tall ? 26 : 38;
+  final pages = math.max(1, math.min(aWords.length, math.max((aWords.length / cap).ceil(), (tWords.length / trCap).ceil())));
+  // Recitation time follows the letters more closely than the words, so page times are
+  // weighted by letters; they are then moved to the nearest real pause in the recording.
+  int letters(String w) => w.runes.where((r) => !(r >= 0x064B && r <= 0x065F) && r != 0x0670 && r != 0x06DD).length;
+  final aW = [for (final w in aWords) math.max(1, letters(w))];
+  final aTotal = aW.fold<int>(0, (a, b) => a + b);
+  // Word index where page k starts: the one whose letter share is closest to k / pages.
+  final aStart = <int>[0];
+  for (var k = 1; k < pages; k++) {
+    final want = aTotal * k / pages;
+    var acc = 0;
+    var best = aStart.last + 1;
+    for (var i = 0; i < aWords.length; i++) {
+      acc += aW[i];
+      if (acc >= want) {
+        best = i + 1;
+        break;
+      }
+    }
+    final lo = aStart.last + 1;
+    final hi = aWords.length - (pages - k);
+    aStart.add(hi < lo ? lo : best.clamp(lo, hi).toInt());
+  }
+  aStart.add(aWords.length);
+  // Start time of every page (ms), moved to the closest pause within a window.
+  final pageMs = <int>[0];
+  for (var k = 1; k < pages; k++) {
+    var acc = 0;
+    for (var i = 0; i < aStart[k]; i++) {
+      acc += aW[i];
+    }
+    var t = (durationMs * acc / aTotal).round();
+    final window = math.max(1500, (durationMs * 0.12).round());
+    var bestD = window + 1;
+    for (final pz in pauses) {
+      final d = (pz - t).abs();
+      if (d < bestD) {
+        bestD = d;
+        if (d <= window) t = pz;
+      }
+    }
+    pageMs.add(math.max(t, pageMs.last + 1000));
+  }
+  pageMs.add(durationMs);
   final layers = <Layer>[];
   // Translation page breaks: start from the word share, then move to the nearest
   // sentence or clause end so a page does not begin in the middle of a phrase.
   final tb = <int>[0];
   for (var k = 1; k < pages; k++) {
-    tb.add(_snap(tWords, (tWords.length * k / pages).round(), tb[k - 1] + 1, tWords.length - (pages - k)));
+    tb.add(_snap(tWords, (tWords.length * aStart[k] / aWords.length).round(), tb[k - 1] + 1, tWords.length - (pages - k)));
   }
   tb.add(tWords.length);
 
   for (var k = 0; k < pages; k++) {
-    final a0 = (aWords.length * k / pages).round();
-    final a1 = (aWords.length * (k + 1) / pages).round();
+    final a0 = aStart[k];
+    final a1 = aStart[k + 1];
     final t0 = tb[k];
     final t1 = tb[k + 1];
-    final start = pages == 1 ? 0 : (durationMs * a0 / aWords.length).round();
-    final end = (pages == 1 || k == pages - 1) ? -1 : (durationMs * a1 / aWords.length).round();
+    final start = pages == 1 ? 0 : pageMs[k];
+    final end = (pages == 1 || k == pages - 1) ? -1 : pageMs[k + 1];
 
     final arLayer = Layer(
       id: newId(),
@@ -158,5 +212,45 @@ void _fit(Layer layer, double px, double maxW) {
     final f = maxW / layer.w;
     layer.w = maxW;
     layer.h = layer.h * f;
+  }
+}
+
+/// Moments (ms, counted from the start of the trimmed verse) where the reciter pauses. Used to
+/// start a new text page where the recitation really breathes. Returns an empty list when the
+/// recording cannot be analysed.
+Future<List<int>> versePauses(String path, int totalMs, int trimStartMs, int durationMs) async {
+  try {
+    if (totalMs <= 0 || durationMs < 8000) return const [];
+    final bins = (totalMs / 100).round().clamp(200, 2500).toInt();
+    final peaks = await KainuwaEncoder.audioPeaks(path, bins: bins);
+    if (peaks.length < 20) return const [];
+    var top = 0.0;
+    for (final p in peaks) {
+      if (p > top) top = p;
+    }
+    if (top <= 0) return const [];
+    final limit = top * 0.10;
+    final bin = totalMs / peaks.length;
+    final out = <int>[];
+    var i = 0;
+    while (i < peaks.length) {
+      if (peaks[i] < limit) {
+        var j = i;
+        while (j < peaks.length && peaks[j] < limit) {
+          j++;
+        }
+        // A pause lasts at least about 0.2 s.
+        if ((j - i) * bin >= 200) {
+          final mid = (((i + j) / 2) * bin).round() - trimStartMs;
+          if (mid > 500 && mid < durationMs - 500) out.add(mid);
+        }
+        i = j;
+      } else {
+        i++;
+      }
+    }
+    return out;
+  } catch (_) {
+    return const [];
   }
 }

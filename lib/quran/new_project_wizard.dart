@@ -64,6 +64,13 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   VerseSelection? _sel;
   bool _withTr = true;
   bool _showFooter = true;
+  bool _endMark = true;
+  // Choices that replace the template's own look (null = use the template).
+  String? _arFont;
+  String? _trFont;
+  int? _arColor;
+  int? _trColor;
+  double _sizeK = 1.0;
   BgChoice _bg = BgChoice();
   String _lang = 'en_sahih';
   List<_Rec> _recs = [];
@@ -77,6 +84,14 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   String? _error;
 
   static const _shapes = [(9, 16), (16, 9), (1, 1)];
+  QTemplate get _effLook => _tpls[_look.clamp(0, _tpls.length - 1).toInt()].copyWith(
+        arabicFont: _arFont,
+        translationFont: _trFont,
+        arabicColor: _arColor,
+        translationColor: _trColor,
+        scale: _sizeK,
+      );
+
   (int, int) get _dims => _shape == 3 ? _custom : _shapes[_shape];
 
   @override
@@ -322,12 +337,14 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       Stage.use(aw, ah);
       stageUsed = true;
       final tall = ah > aw;
-      final look = _tpls[_look];
+      final look = _effLook;
       var pos = 0;
       for (var i = 0; i < items.length; i++) {
         final it = items[i];
         final dur = trims[i].$2 - trims[i].$1;
+        final pauses = await versePauses(paths[i], durations[i], trims[i].$1, dur);
         final layers = buildVerseLayers(
+          pauses: pauses,
           arabic: it.arabic,
           translation: it.translation,
           tall: tall,
@@ -337,6 +354,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           translationFont: rm.familyIfReady(look.translationFont),
           translationAlign: _align,
           footer: _showFooter && it.label.isNotEmpty ? it.label : null,
+          endMark: _endMark && it.label.isNotEmpty ? int.parse(it.audioCode.substring(3)) : 0,
         );
         final made = plan.scenesFor(durationMs: dur, layers: layers, imageAsset: look.assetFor(aw, ah));
         for (final sc in made) {
@@ -996,10 +1014,126 @@ onChanged: (v) => setState(() => _showFooter = v),
     ];
   }
 
+  static const _palette = <int>[
+    0xFFFFFFFF, 0xFFFFF4D6, 0xFFF6C101, 0xFFE8C96A, 0xFFFFD9C7, 0xFFBDEBD8,
+    0xFFBFE0FF, 0xFFB9C4F5, 0xFF6B4A1E, 0xFF3B2410, 0xFF2B1B08, 0xFF000000,
+  ];
+
+  Widget _swatches(int? current, int fallback, ValueChanged<int> onPick) {
+    final cur = current ?? fallback;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final c in _palette)
+          InkWell(
+            onTap: () => onPick(c),
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: Color(c),
+                shape: BoxShape.circle,
+                border: Border.all(color: cur == c ? KColors.gold : Colors.white30, width: cur == c ? 3 : 1),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Fonts, colours and size chosen by the person; they replace the template's own values.
+  List<Widget> _textOptions() {
+    final rm = ResourceManager.instance;
+    final base = _tpls[_look.clamp(0, _tpls.length - 1).toInt()];
+    const latin = {'Noto Sans', 'Noto Serif', 'Lora', 'Poppins'};
+    final fonts = rm.readyFonts();
+    final arFonts = [for (final f in fonts) if (!latin.contains(f)) f];
+    final trFonts = [for (final f in fonts) if (latin.contains(f)) f];
+    String? valid(String? v, String fallback, List<String> list) {
+      final x = v ?? fallback;
+      return list.contains(x) ? x : null;
+    }
+
+    Widget drop(String label, String? value, List<String> list, ValueChanged<String?> on) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: DropdownButtonFormField<String>(
+            value: value,
+            isExpanded: true,
+            decoration: InputDecoration(labelText: label),
+            items: [
+              for (final f in list)
+                DropdownMenuItem(value: f, child: Text(f, style: TextStyle(fontFamily: f))),
+            ],
+            onChanged: on,
+          ),
+        );
+
+    return [
+      const Text('Customize text', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
+      const SizedBox(height: 6),
+      drop('Arabic font', valid(_arFont, base.arabicFont, arFonts), arFonts, (v) => setState(() => _arFont = v)),
+      if (_withTr)
+        drop('Translation font', valid(_trFont, base.translationFont, trFonts), trFonts,
+            (v) => setState(() => _trFont = v)),
+      if (arFonts.length < 2)
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text('More fonts appear here after they are downloaded in Library, Resources.',
+              style: TextStyle(fontSize: 11.5, color: Colors.white60)),
+        ),
+      const Text('Arabic colour', style: TextStyle(fontSize: 12.5)),
+      const SizedBox(height: 4),
+      _swatches(_arColor, base.arabicColor, (c) => setState(() => _arColor = c)),
+      if (_withTr) ...[
+        const SizedBox(height: 8),
+        const Text('Translation colour', style: TextStyle(fontSize: 12.5)),
+        const SizedBox(height: 4),
+        _swatches(_trColor, base.translationColor, (c) => setState(() => _trColor = c)),
+      ],
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          const Text('Text size', style: TextStyle(fontSize: 12.5)),
+          Expanded(
+            child: Slider(
+              value: _sizeK,
+              min: 0.7,
+              max: 1.3,
+              divisions: 12,
+              label: '${(_sizeK * 100).round()}%',
+              onChanged: (v) => setState(() => _sizeK = v),
+            ),
+          ),
+        ],
+      ),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Show the end-of-verse sign with the verse number'),
+        value: _endMark,
+        onChanged: (v) => setState(() => _endMark = v),
+      ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton(
+          onPressed: () => setState(() {
+            _arFont = null;
+            _trFont = null;
+            _arColor = null;
+            _trColor = null;
+            _sizeK = 1.0;
+          }),
+          child: const Text('Reset to the template look'),
+        ),
+      ),
+      const SizedBox(height: 6),
+    ];
+  }
+
   /// Shows the chosen template's fonts, colours and shadow on a sample verse, in the shape of
   /// the video, so the look can be checked before the video is made.
   Widget _stylePreview() {
-    final t = _tpls[_look.clamp(0, _tpls.length - 1).toInt()];
+    final t = _effLook;
     final rm = ResourceManager.instance;
     final (w, h) = _dims;
     final ar = rm.familyIfReady(t.arabicFont, fallback: _family);
@@ -1011,6 +1145,7 @@ onChanged: (v) => setState(() => _showFooter = v),
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        ..._textOptions(),
         const Text('Font preview', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
         const SizedBox(height: 6),
         Center(
@@ -1034,10 +1169,10 @@ onChanged: (v) => setState(() => _showFooter = v),
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '\u062a\u064e\u0628\u064e\u0627\u0631\u064e\u0643\u064e \u0671\u0644\u0651\u064e\u0630\u0650\u064a \u0628\u0650\u064a\u064e\u062f\u0650\u0647\u0650 \u0671\u0644\u0652\u0645\u064f\u0644\u0652\u0643\u064f',
+                              '\u062a\u064e\u0628\u064e\u0627\u0631\u064e\u0643\u064e \u0671\u0644\u0651\u064e\u0630\u0650\u064a \u0628\u0650\u064a\u064e\u062f\u0650\u0647\u0650 \u0671\u0644\u0652\u0645\u064f\u0644\u0652\u0643\u064f${_endMark ? '\u00A0\u06DD\u0661' : ''}',
                               textDirection: TextDirection.rtl,
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 22, height: 1.6, color: Color(t.arabicColor), fontFamily: ar, shadows: shadows),
+                              style: TextStyle(fontSize: 22 * _sizeK, height: 1.6, color: Color(t.arabicColor), fontFamily: ar, shadows: shadows),
                             ),
                             const SizedBox(height: 6),
                             Text(

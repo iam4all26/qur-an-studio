@@ -130,6 +130,16 @@ class ResourceManager extends ChangeNotifier {
     return fallback;
   }
 
+  /// Families of the downloaded fonts that are installed, in catalog order.
+  List<String> readyFonts() {
+    final out = <String>[];
+    for (final e in catalog) {
+      final f = e.family;
+      if (e.type == 'font' && f != null && stateOf(e) == ResourceState.ready && !out.contains(f)) out.add(f);
+    }
+    return out;
+  }
+
   /// SHA-256 of the installed copy of a resource, or null when not installed.
   String? installedHash(String id) => _installed[id];
 

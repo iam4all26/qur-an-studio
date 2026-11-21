@@ -45,6 +45,29 @@ class QTemplate {
   final bool shadow;
   final int shadowColor;
 
+  /// A copy with the fonts, colours or text size changed by the person.
+  QTemplate copyWith({String? arabicFont, String? translationFont, int? arabicColor, int? translationColor, double? scale}) {
+    final k = scale ?? 1.0;
+    return QTemplate(
+      id: id,
+      name: name,
+      category: category,
+      portraitAsset: portraitAsset,
+      landscapeAsset: landscapeAsset,
+      squareAsset: squareAsset,
+      arabicColor: arabicColor ?? this.arabicColor,
+      translationColor: translationColor ?? this.translationColor,
+      arabicTall: arabicTall * k,
+      arabicWide: arabicWide * k,
+      translationTall: translationTall * k,
+      translationWide: translationWide * k,
+      arabicFont: arabicFont ?? this.arabicFont,
+      translationFont: translationFont ?? this.translationFont,
+      shadow: shadow,
+      shadowColor: shadowColor,
+    );
+  }
+
   /// The picture made for the video shape: wide, square or tall. A template without a square
   /// picture uses the tall one.
   String assetFor(int w, int h) {
