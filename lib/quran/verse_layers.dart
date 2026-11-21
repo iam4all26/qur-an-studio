@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:kainuwa_encoder/kainuwa_encoder.dart';
@@ -288,3 +290,20 @@ Layer darkOverlayLayer(String sceneId, double opacity) => Layer(
       color: 0xFF000000,
       opacity: opacity,
     );
+
+/// A message for the person: a missing internet connection is explained in plain words and the
+/// technical error text is hidden; anything else keeps its detail.
+String friendlyError(Object e, String what) {
+  final t = e.toString();
+  final offline = e is SocketException ||
+      e is TimeoutException ||
+      t.contains('SocketException') ||
+      t.contains('Failed host lookup') ||
+      t.contains('ClientException') ||
+      t.contains('Connection') ||
+      t.contains('timed out');
+  if (offline) {
+    return 'No internet connection. The recitation has to be downloaded, so connect to the internet and try again.';
+  }
+  return '$what: $e';
+}

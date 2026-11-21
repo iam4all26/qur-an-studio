@@ -19,7 +19,6 @@ import '../watermark.dart';
 import '../scene_canvas.dart';
 import '../hands.dart';
 import '../quran/outro.dart';
-import '../quran/reciter_lookup.dart';
 import '../stage_shape.dart';
 import '../text_reveal.dart';
 import '../theme.dart';
@@ -246,11 +245,11 @@ class _ExportScreenState extends State<ExportScreen> {
     // The built-in ending clip (logo, credits, Google Play).
     var outroMs = 0;
     if (_outro) {
-      var who = '';
-      if (lesson.qReciter.isNotEmpty) {
-        who = (await ReciterLookup.all())[lesson.qReciter]?.$1 ?? '';
-      }
-      final outro = buildOutroScene(aspectW: lesson.aspectW, aspectH: lesson.aspectH, reciterName: who);
+      // A fade from the last slide into the ending clip, which keeps the video's background.
+      scenes.last.transKind = 'fade';
+      scenes.last.transDir = 'left';
+      scenes.last.transMs = 800;
+      final outro = buildOutroScene(aspectW: lesson.aspectW, aspectH: lesson.aspectH, last: scenes.last);
       scenes.add(outro);
       outroMs = outro.durationMs;
     }

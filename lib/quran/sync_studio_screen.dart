@@ -495,7 +495,7 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
       );
     } catch (e) {
       if (stageUsed) Stage.reset();
-      if (mounted) setState(() => _error = 'Could not create the project: $e');
+      if (mounted) setState(() => _error = friendlyError(e, 'Could not create the project'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

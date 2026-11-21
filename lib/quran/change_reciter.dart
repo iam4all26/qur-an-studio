@@ -105,7 +105,7 @@ Future<bool> changeReciter(BuildContext context, Lesson lesson) async {
   if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
   status.dispose();
   if (error != null && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not change the reciter: $error')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(error, 'Could not change the reciter'))));
     return false;
   }
   return true;

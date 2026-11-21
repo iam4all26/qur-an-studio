@@ -32,7 +32,7 @@ class _Rec {
 }
 
 const String _family = 'Amiri Quran';
-const List<String> _steps = ['Details', 'Verses', 'Translation', 'Reciter', 'Template'];
+const List<String> _steps = ['Details', 'Verses', 'Translation', 'Reciter', 'Template', 'Style'];
 
 class _Item {
   _Item(this.arabic, this.translation, this.audioCode, [this.label = '']);
@@ -397,7 +397,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       );
     } catch (e) {
       if (stageUsed) Stage.reset();
-      if (mounted) setState(() => _error = 'Could not create the project: $e');
+      if (mounted) setState(() => _error = friendlyError(e, 'Could not create the project'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -447,6 +447,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                   if (_step == 2) ..._translation(),
                   if (_step == 3) ..._reciter(),
                   if (_step == 4) ..._template(),
+                  if (_step == 5) ..._style(),
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
@@ -469,7 +470,15 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         children: [
           for (var i = 0; i < _steps.length; i++)
             Expanded(
-              child: Column(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _busy || i >= _step
+                    ? null
+                    : () => setState(() {
+                          ReciterPreview.stop();
+                          _step = i;
+                        }),
+                child: Column(
                 children: [
                   Container(
                     width: 30,
@@ -499,6 +508,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                   ),
                 ],
               ),
+              ),
             ),
         ],
       ),
@@ -511,8 +521,27 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
+        child: Row(
+          children: [
+            if (_step > 0 && !_busy) ...[
+              SizedBox(
+                height: 52,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () => setState(() {
+                    ReciterPreview.stop();
+                    _step--;
+                  }),
+                  icon: const Icon(Icons.arrow_back, size: 20),
+                  label: const Text('Back'),
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: SizedBox(
           height: 52,
           child: _busy && last
               ? _progressButton()
@@ -541,6 +570,9 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
               ],
             ),
           ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -987,8 +1019,6 @@ onChanged: (v) => setState(() => _showFooter = v),
               'Pick the Template tab above to see the template pictures.',
               style: TextStyle(fontSize: 11.5, color: Colors.white60)),
         ),
-        const SizedBox(height: 10),
-        _stylePreview(),
       ],
       if (_bg.template) ...[
       const Text('Template', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
@@ -1044,10 +1074,14 @@ onChanged: (v) => setState(() => _showFooter = v),
           );
         },
       ),
-      const SizedBox(height: 12),
-      _stylePreview(),
       ],
     ];
+  }
+
+  /// Step six: fonts, colours, size and the live preview.
+  List<Widget> _style() {
+    if (_tpls.isEmpty) return [const Center(child: CircularProgressIndicator())];
+    return [_stylePreview()];
   }
 
   /// A searchable list of translations: language, translator and whether it is downloaded.
