@@ -754,11 +754,10 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   }
 
   List<Widget> _translation() {
-    const editions = {
-      'en_sahih': ('English', 'Sahih International'),
-      'ha_gumi': ('Hausa', 'Abu Bakr Gumi'),
+    final editions = {
+      for (final e in rm.translationEditions()) e.$1: (e.$2, e.$3),
     };
-    final cur = editions[_lang] ?? editions['en_sahih']!;
+    final cur = editions[_lang] ?? editions.values.first;
     Widget label(String t) => Padding(
           padding: const EdgeInsets.only(top: 14, bottom: 6),
           child: Text(t, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
@@ -814,10 +813,17 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                 items: [DropdownMenuItem(value: _lang, child: Text(cur.$2))],
                 onChanged: (_) {},
               ),
-              if (_lang == 'ha_gumi')
+              if (_lang != 'en_sahih')
                 const Padding(
                   padding: EdgeInsets.only(top: 6),
-                  child: Text('QuranEnc.com, version 1.2.2', style: TextStyle(fontSize: 11.5)),
+                  child: Text('Translation text from QuranEnc.com (credit shown in About).',
+                      style: TextStyle(fontSize: 11.5)),
+                ),
+              if (!rm.isReady(_lang))
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text('This translation is not downloaded yet. Open Library, Resources to download it.',
+                      style: TextStyle(fontSize: 11.5, color: KColors.accent)),
                 ),
               label('Display Style'),
               Row(
@@ -842,7 +848,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _lang == 'en_sahih' ? 'Blessed is He in whose hand is dominion' : cur.$2,
+                      _lang == 'en_sahih' ? 'Blessed is He in whose hand is dominion' : '${cur.$1}: ${cur.$2}',
                       textAlign: _align == 'left'
                           ? TextAlign.left
                           : _align == 'right'

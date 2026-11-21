@@ -50,6 +50,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       case 'reciters':
         return 'Reciter list';
       default:
+        if (e.type == 'translation' && e.langName != null) {
+          return '${e.langName}: ${e.translator ?? ''}';
+        }
         return e.family != null ? 'Font: ${e.family}' : e.id;
     }
   }

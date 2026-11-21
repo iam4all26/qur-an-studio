@@ -19,6 +19,9 @@ class ResourceEntry {
     required this.sizeBytes,
     required this.sha256,
     this.family,
+    this.language,
+    this.langName,
+    this.translator,
   });
 
   final String id;
@@ -28,6 +31,11 @@ class ResourceEntry {
   final String sha256;
   final String? family;
 
+  /// For translations: language code, language name and translator, shown in the pickers.
+  final String? language;
+  final String? langName;
+  final String? translator;
+
   factory ResourceEntry.fromJson(Map<String, dynamic> j) => ResourceEntry(
         id: j['id'] as String,
         type: j['type'] as String,
@@ -35,6 +43,9 @@ class ResourceEntry {
         sizeBytes: (j['sizeBytes'] as num).toInt(),
         sha256: j['sha256'] as String,
         family: j['family'] as String?,
+        language: j['language'] as String?,
+        langName: j['name'] as String?,
+        translator: j['translator'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -44,6 +55,9 @@ class ResourceEntry {
         'sizeBytes': sizeBytes,
         'sha256': sha256,
         if (family != null) 'family': family,
+        if (language != null) 'language': language,
+        if (langName != null) 'name': langName,
+        if (translator != null) 'translator': translator,
       };
 }
 
@@ -128,6 +142,30 @@ class ResourceManager extends ChangeNotifier {
       if (e.type == 'font' && e.family == family && stateOf(e) == ResourceState.ready) return family;
     }
     return fallback;
+  }
+
+  /// The translations in the catalog as (id, language name, translator), English first, then
+  /// Hausa, then the rest by language name.
+  List<(String, String, String)> translationEditions() {
+    final out = <(String, String, String)>[];
+    for (final e in catalog) {
+      if (e.type != 'translation') continue;
+      final lang = e.langName ??
+          (e.id == 'en_sahih' ? 'English' : e.id == 'ha_gumi' ? 'Hausa' : e.id);
+      final who = e.translator ??
+          (e.id == 'en_sahih' ? 'Sahih International' : e.id == 'ha_gumi' ? 'Abu Bakr Gumi' : '');
+      out.add((e.id, lang, who));
+    }
+    if (out.isEmpty) {
+      out.add(('en_sahih', 'English', 'Sahih International'));
+      out.add(('ha_gumi', 'Hausa', 'Abu Bakr Gumi'));
+    }
+    int rank(String id) => id == 'en_sahih' ? 0 : (id == 'ha_gumi' ? 1 : 2);
+    out.sort((a, b) {
+      final r = rank(a.$1).compareTo(rank(b.$1));
+      return r != 0 ? r : a.$2.compareTo(b.$2);
+    });
+    return out;
   }
 
   /// Families of the downloaded fonts that are installed, in catalog order.

@@ -37,7 +37,13 @@ List<Layer> buildVerseLayers({
   final tWords = translation.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final cap = tall ? 14 : 18;
   final trCap = tall ? 26 : 38;
-  final pages = math.max(1, math.min(aWords.length, math.max((aWords.length / cap).ceil(), (tWords.length / trCap).ceil())));
+  // A long recitation gets a new page about every 8 seconds, so a wrong guess about the
+  // reading speed can never drift far from what is being recited.
+  final byTime = durationMs > 20000 ? (durationMs / 8000).ceil() : 1;
+  final pages = math.max(
+      1,
+      math.min(aWords.length,
+          math.max(math.max((aWords.length / cap).ceil(), (tWords.length / trCap).ceil()), byTime)));
   // Recitation time follows the letters more closely than the words, so page times are
   // weighted by letters; they are then moved to the nearest real pause in the recording.
   int letters(String w) => w.runes.where((r) => !(r >= 0x064B && r <= 0x065F) && r != 0x0670 && r != 0x06DD).length;
@@ -69,7 +75,7 @@ List<Layer> buildVerseLayers({
       acc += aW[i];
     }
     var t = (durationMs * acc / aTotal).round();
-    final window = math.max(1500, (durationMs * 0.12).round());
+    final window = math.max(1200, (durationMs / pages * 0.35).round());
     var bestD = window + 1;
     for (final pz in pauses) {
       final d = (pz - t).abs();
@@ -78,7 +84,10 @@ List<Layer> buildVerseLayers({
         if (d <= window) t = pz;
       }
     }
-    pageMs.add(math.max(t, pageMs.last + 1000));
+    // Every page stays on screen for at least 1.5 s, and so does the last one.
+    final floor = pageMs.last + 1500;
+    final ceil = durationMs - 1500 * (pages - k);
+    pageMs.add(ceil < floor ? floor : t.clamp(floor, ceil).toInt());
   }
   pageMs.add(durationMs);
   final layers = <Layer>[];
@@ -215,38 +224,47 @@ void _fit(Layer layer, double px, double maxW) {
   }
 }
 
-/// Moments (ms, counted from the start of the trimmed verse) where the reciter pauses. Used to
-/// start a new text page where the recitation really breathes. Returns an empty list when the
-/// recording cannot be analysed.
+/// Moments (ms, counted from the start of the trimmed verse) where the recitation dips: a
+/// breath or the end of a phrase. Found as local lows in the loudness curve, so it also works
+/// for reciters who never stop completely. Used to start a new text page where the recitation
+/// really breaks. Returns an empty list when the recording cannot be analysed.
 Future<List<int>> versePauses(String path, int totalMs, int trimStartMs, int durationMs) async {
   try {
     if (totalMs <= 0 || durationMs < 8000) return const [];
-    final bins = (totalMs / 100).round().clamp(200, 2500).toInt();
+    final bins = (totalMs / 50).round().clamp(200, 4000).toInt();
     final peaks = await KainuwaEncoder.audioPeaks(path, bins: bins);
-    if (peaks.length < 20) return const [];
+    if (peaks.length < 40) return const [];
     var top = 0.0;
     for (final p in peaks) {
       if (p > top) top = p;
     }
     if (top <= 0) return const [];
-    final limit = top * 0.10;
     final bin = totalMs / peaks.length;
+    // Smooth over three bins, then take points much lower than the loudness around them.
+    final sm = List<double>.filled(peaks.length, 0);
+    for (var i = 0; i < peaks.length; i++) {
+      final a = peaks[math.max(0, i - 1)];
+      final b = peaks[i];
+      final c = peaks[math.min(peaks.length - 1, i + 1)];
+      sm[i] = (a + b + c) / 3;
+    }
+    final w = math.max(4, (600 / bin).round());
     final out = <int>[];
-    var i = 0;
-    while (i < peaks.length) {
-      if (peaks[i] < limit) {
-        var j = i;
-        while (j < peaks.length && peaks[j] < limit) {
-          j++;
+    var lastAt = -100000;
+    for (var i = w; i < sm.length - w; i++) {
+      var sum = 0.0;
+      var lowest = true;
+      for (var k = i - w; k <= i + w; k++) {
+        sum += sm[k];
+        if (sm[k] < sm[i]) lowest = false;
+      }
+      final avg = sum / (2 * w + 1);
+      if (lowest && sm[i] < avg * 0.5 && avg > top * 0.08) {
+        final at = (i * bin).round() - trimStartMs;
+        if (at > 500 && at < durationMs - 500 && at - lastAt >= 700) {
+          out.add(at);
+          lastAt = at;
         }
-        // A pause lasts at least about 0.2 s.
-        if ((j - i) * bin >= 200) {
-          final mid = (((i + j) / 2) * bin).round() - trimStartMs;
-          if (mid > 500 && mid < durationMs - 500) out.add(mid);
-        }
-        i = j;
-      } else {
-        i++;
       }
     }
     return out;

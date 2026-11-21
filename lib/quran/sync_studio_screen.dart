@@ -567,7 +567,7 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
         Wrap(
           spacing: 8,
           children: [
-            for (final e in const [('none', 'None'), ('en_sahih', 'English'), ('ha_gumi', 'Hausa')])
+            for (final e in [('none', 'None'), for (final x in rm.translationEditions()) (x.$1, x.$2)])
               ChoiceChip(
                 label: Text(e.$2),
                 selected: _tr == e.$1,

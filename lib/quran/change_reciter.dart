@@ -204,10 +204,10 @@ Future<_Settings?> _settingsFor(BuildContext context, Lesson lesson) async {
                 value: lang,
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Translation'),
-                items: const [
-                  DropdownMenuItem(value: '', child: Text('None')),
-                  DropdownMenuItem(value: 'en_sahih', child: Text('English - Sahih International')),
-                  DropdownMenuItem(value: 'ha_gumi', child: Text('Hausa - Abu Bakr Gumi')),
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('None')),
+                  for (final e in ResourceManager.instance.translationEditions())
+                    DropdownMenuItem(value: e.$1, child: Text('${e.$2} - ${e.$3}')),
                 ],
                 onChanged: (v) => setD(() => lang = v ?? lang),
               ),
