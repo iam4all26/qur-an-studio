@@ -98,6 +98,7 @@ class _ExportScreenState extends State<ExportScreen> {
   int _pH = 0;
   int _pDur = 0;
   int _pSize = 0;
+  int _lastNotified = -1;
 
   @override
   void dispose() {
@@ -128,6 +129,12 @@ class _ExportScreenState extends State<ExportScreen> {
       // The bar only ever moves forward.
       if (value > _progress) _progress = value;
     });
+    final pct = (_progress * 100).round();
+    if (pct != _lastNotified) {
+      _lastNotified = pct;
+      const names = ['Drawing slides', 'Preparing narration', 'Creating video'];
+      KainuwaEncoder.exportNotify(pct, names[phase]);
+    }
   }
 
   void _guard() {
@@ -271,8 +278,10 @@ class _ExportScreenState extends State<ExportScreen> {
       _phase = 0;
       _progress = 0;
       _startedAt = DateTime.now();
-      _status = 'Drawing slides. Keep this screen open.';
+      _status = 'Drawing slides. You can leave the app; progress shows in the status bar.';
     });
+    _lastNotified = -1;
+    KainuwaEncoder.exportNotify(0, 'Drawing slides');
 
     _ticker?.cancel();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -283,10 +292,10 @@ class _ExportScreenState extends State<ExportScreen> {
       KainuwaEncoder.stage.listen((s) {
         if (s == 'audio') {
           _setProgress(1, 0);
-          _set('Preparing the narration. Keep this screen open.');
+          _set('Preparing the narration. You can leave the app.');
         } else if (s == 'video') {
           _setProgress(2, 0);
-          _set('Creating the video. This can take a while. Keep this screen open.');
+          _set('Creating the video. This can take a while. You can leave the app.');
         }
       }),
       KainuwaEncoder.audioProgress.listen((p) => _setProgress(1, p / 100)),
@@ -639,6 +648,7 @@ class _ExportScreenState extends State<ExportScreen> {
     } catch (e) {
       _set('Export stopped: $e', failed: true);
     } finally {
+      KainuwaEncoder.exportNotifyStop(_cancelled ? 'cancelled' : (_failed ? 'failed' : 'done'));
       _ticker?.cancel();
       _ticker = null;
       for (final s in subs) {

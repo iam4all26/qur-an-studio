@@ -180,6 +180,23 @@ class KainuwaEncoder {
     return _progress.stream;
   }
 
+  /// Shows or updates the export progress in the status bar and keeps the app running in the
+  /// background. Call [exportNotifyStop] when the export ends.
+  static Future<void> exportNotify(int percent, String text) async {
+    _init();
+    try {
+      await _channel.invokeMethod<void>('exportNotify', {'pct': percent, 'text': text});
+    } catch (_) {}
+  }
+
+  /// Ends the status bar notification. state is done, failed or cancelled.
+  static Future<void> exportNotifyStop(String state) async {
+    _init();
+    try {
+      await _channel.invokeMethod<void>('exportNotifyStop', {'state': state});
+    } catch (_) {}
+  }
+
   /// Opens the app page in the Play Store app. Returns play, market, web or failed.
   static Future<String> openStore(String package, String url) async {
     _init();

@@ -310,6 +310,14 @@ public class KainuwaEncoderPlugin
             case "pickMany":
                 pick((String) call.argument("mime"), true, result);
                 break;
+            case "exportNotify":
+                exportNotify((int) num(call, "pct", 0), (String) call.argument("text"));
+                result.success(null);
+                break;
+            case "exportNotifyStop":
+                ExportService.stop(appContext, (String) call.argument("state"));
+                result.success(null);
+                break;
             case "openStore":
                 openStore((String) call.argument("package"), (String) call.argument("url"), result);
                 break;
@@ -413,6 +421,24 @@ public class KainuwaEncoderPlugin
                 break;
             default:
                 result.notImplemented();
+        }
+    }
+
+    // ---- Export notification ----
+
+    private boolean askedNotifications = false;
+
+    private void exportNotify(int pct, String text) {
+        try {
+            if (!askedNotifications && Build.VERSION.SDK_INT >= 33 && activity != null
+                    && appContext.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                askedNotifications = true;
+                activity.requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 4301);
+            }
+            ExportService.show(appContext, pct, text == null ? "Making your video" : text);
+        } catch (Exception ignored) {
+            // the export goes on without a notification
         }
     }
 
