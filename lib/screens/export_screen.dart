@@ -18,6 +18,7 @@ import '../transition_math.dart';
 import '../watermark.dart';
 import '../scene_canvas.dart';
 import '../hands.dart';
+import '../pro.dart';
 import '../quran/outro.dart';
 import '../stage_shape.dart';
 import '../text_reveal.dart';
@@ -244,7 +245,7 @@ class _ExportScreenState extends State<ExportScreen> {
     }).toList();
     // The built-in ending clip (logo, credits, Google Play).
     var outroMs = 0;
-    if (_outro) {
+    if (_outro || !Pro.instance.has(ProFeature.removeOutro)) {
       // A fade from the last slide into the ending clip, which keeps the video's background.
       scenes.last.transKind = 'fade';
       scenes.last.transDir = 'left';
@@ -353,7 +354,7 @@ class _ExportScreenState extends State<ExportScreen> {
           bgValue: scene.hasVideo ? '0' : scene.bgValue,
           layers: List<Layer>.of(staticLayers),
         );
-        final wm = AppScope.read(context).settings.wm;
+        final wm = Pro.instance.watermarkFor(AppScope.read(context).settings.wm);
         final phoneOn = scene.hasVideo && scene.phoneFrame;
         final geo = PhoneGeometry(stageW, stageH, scene.phoneScale);
         final baseImage = await _capture(
@@ -1335,10 +1336,13 @@ class _ExportScreenState extends State<ExportScreen> {
         card(SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Add the ending clip'),
-          subtitle: const Text('A short animated end: app logo, credits and Google Play',
-              style: TextStyle(fontSize: 12)),
-          value: _outro,
-          onChanged: _busy ? null : (v) => setState(() => _outro = v),
+          subtitle: Text(
+              Pro.instance.has(ProFeature.removeOutro)
+                  ? 'A short animated end: app logo, credits and Google Play'
+                  : 'PRO: removing the ending clip needs the Pro plan',
+              style: const TextStyle(fontSize: 12)),
+          value: _outro || !Pro.instance.has(ProFeature.removeOutro),
+          onChanged: _busy || !Pro.instance.has(ProFeature.removeOutro) ? null : (v) => setState(() => _outro = v),
         )),
         card(Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1430,7 +1434,7 @@ class _ExportScreenState extends State<ExportScreen> {
         )),
         card(WatermarkCard(
           wm: state.settings.wm,
-          enabled: !_busy,
+          enabled: !_busy && Pro.instance.has(ProFeature.customWatermark),
           onChanged: (w) => state.updateSettings(state.settings.copyWith(wm: w)),
         )),
         if (_busy) ...[

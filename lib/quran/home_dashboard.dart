@@ -38,6 +38,28 @@ class HomeDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        _content(context),
+        // Quick button to start a new project from anywhere on Home.
+        Positioned(
+          right: 18,
+          bottom: 18,
+          child: FloatingActionButton(
+            backgroundColor: KColors.selected,
+            foregroundColor: Colors.white,
+            tooltip: 'New project',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const NewProjectWizard()),
+            ),
+            child: const Icon(Icons.add, size: 30),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _content(BuildContext context) {
     final state = AppScope.of(context);
     final videos = state.courses.where((c) => c.isVideo && c.lessons.isNotEmpty).toList();
     final Course? latest = videos.isEmpty ? null : videos.first;

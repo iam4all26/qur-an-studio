@@ -18,11 +18,13 @@ import 'reciter_media.dart';
 import 'resource_manager.dart';
 import 'templates.dart';
 import 'background_choice.dart';
+import '../pro.dart';
 import 'verse_layers.dart';
 import 'verse_select_screen.dart';
 
 class _Rec {
-  const _Rec(this.id, this.name, this.folder, this.urlTemplate, [this.country = '', this.image = '']);
+  const _Rec(this.id, this.name, this.folder, this.urlTemplate, [this.country = '', this.image = '', this.pro = false]);
+  final bool pro;
   final String country;
   final String image;
   final String id;
@@ -130,7 +132,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         for (final r in (j['reciters'] as List))
           if ((r as Map)['verified'] == true)
             _Rec('${r['id']}', '${r['name']}', '${r['folder']}', '${r['per_ayah_url']}',
-                '${r['country'] ?? ''}', '${r['image'] ?? ''}')
+                '${r['country'] ?? ''}', '${r['image'] ?? ''}', r['pro'] == true)
       ];
       if (mounted) setState(() => _recs = list);
     } catch (_) {}
@@ -293,6 +295,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
         if (tr.length != 6236) throw StateError('The translation file is incomplete.');
         offset = await db.offsetOf(sel.surah.number);
       }
+      // The translation language is written before the surah and verse at the bottom.
+      final trTag = _withTr ? '${rm.translationEditions().where((e) => e.$1 == _lang).map((e) => e.$2).firstOrNull ?? ''} | ' : '';
       String trOf(int s, int a, int off) => tr == null ? '' : tr[off + a - 1];
 
       final items = <_Item>[];
@@ -302,7 +306,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       }
       for (final v in rows) {
         items.add(_Item(v.text, trOf(surahNo, v.ayah, offset), _code(surahNo, v.ayah),
-            '${sel.surah.nameEn} - $surahNo:${v.ayah}'));
+            '$trTag${sel.surah.nameEn} - $surahNo:${v.ayah}'));
       }
 
       final rec = _recs[_rec];
@@ -937,7 +941,14 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           padding: const EdgeInsets.only(bottom: 10),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => setState(() => _rec = i),
+            onTap: () {
+              if (_recs[i].pro && !Pro.instance.has(ProFeature.premiumReciters)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('This reciter is part of the Pro plan.')));
+                return;
+              }
+              setState(() => _rec = i);
+            },
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -953,6 +964,8 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (_recs[i].pro)
+                          const Text('PRO', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFFB8860B))),
                         Text(_recs[i].name,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,

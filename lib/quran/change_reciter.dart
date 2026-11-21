@@ -513,6 +513,8 @@ Future<void> _rebuild(Lesson lesson, _Choice rec, _Settings st, ValueNotifier<St
   final arabic = <String>[];
   final trans = <String>[];
   final labels = <String>[];
+  final trName = rm.translationEditions().where((e) => e.$1 == st.lang).map((e) => e.$2).firstOrNull ?? '';
+  final trTag = (tr == null || trName.isEmpty) ? '' : '$trName | ';
   final basmala = await db.basmala();
   for (final (s, a) in order) {
     if (a == 0) {
@@ -525,7 +527,7 @@ Future<void> _rebuild(Lesson lesson, _Choice rec, _Settings st, ValueNotifier<St
       arabic.add(rows.first.text);
       final off = offsets[s] ?? (offsets[s] = await db.offsetOf(s));
       trans.add(tr == null ? '' : tr[off + a - 1]);
-      labels.add('${surahs[s]?.nameEn ?? 'Surah $s'} - $s:$a');
+      labels.add('$trTag${surahs[s]?.nameEn ?? 'Surah $s'} - $s:$a');
     }
   }
 
