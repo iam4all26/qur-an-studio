@@ -5,6 +5,7 @@ import '../models.dart';
 import '../screens/lesson_editor_screen.dart';
 import '../theme.dart';
 import 'new_project_wizard.dart';
+import 'reciter_lookup.dart';
 
 class ProjectsScreen extends StatefulWidget {
   const ProjectsScreen({super.key});
@@ -113,7 +114,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         height: 64,
         child: Stack(
           fit: StackFit.expand,
-          children: [fill, const Icon(Icons.play_arrow, color: Colors.white)],
+          children: [
+            fill,
+            const Icon(Icons.play_arrow, color: Colors.white),
+            if (c.lessons.isNotEmpty && c.lessons.first.qReciter.isNotEmpty)
+              Positioned(
+                right: 3,
+                bottom: 3,
+                child: ReciterBadge(id: c.lessons.first.qReciter, radius: 11),
+              ),
+          ],
         ),
       ),
     );
@@ -208,9 +218,19 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                         )
                       : _thumb(c),
                   title: Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(
-                    '${c.lessons.first.scenes.length} scenes  -  ${_len(c.totalMs)}  -  ${_date(c.createdAt)}',
-                    style: const TextStyle(fontSize: 12),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (c.lessons.first.qReciter.isNotEmpty)
+                        ReciterName(
+                          id: c.lessons.first.qReciter,
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                        ),
+                      Text(
+                        '${c.lessons.first.scenes.length} scenes  -  ${_len(c.totalMs)}  -  ${_date(c.createdAt)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
                   ),
                   trailing: _selecting
                       ? null

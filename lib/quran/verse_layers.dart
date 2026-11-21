@@ -35,11 +35,14 @@ List<Layer> buildVerseLayers({
     aWords[aWords.length - 1] = '${aWords.last}\u00A0\u06DD$num';
   }
   final tWords = translation.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-  final cap = tall ? 14 : 18;
-  final trCap = tall ? 26 : 38;
-  // A long recitation gets a new page about every 8 seconds, so a wrong guess about the
-  // reading speed can never drift far from what is being recited.
-  final byTime = durationMs > 20000 ? (durationMs / 8000).ceil() : 1;
+  // A long verse (over 20 s) keeps more text on one page at a smaller size, so the page does
+  // not change every few seconds and a small timing error is not noticed. Short verses keep
+  // the larger text.
+  final longVerse = durationMs > 20000;
+  final cap = longVerse ? (tall ? 28 : 36) : (tall ? 14 : 18);
+  final trCap = longVerse ? (tall ? 50 : 70) : (tall ? 26 : 38);
+  final byTime = longVerse ? (durationMs / 24000).ceil() : 1;
+  final sizeK = longVerse ? 0.8 : 1.0;
   final pages = math.max(
       1,
       math.min(aWords.length,
@@ -75,7 +78,7 @@ List<Layer> buildVerseLayers({
       acc += aW[i];
     }
     var t = (durationMs * acc / aTotal).round();
-    final window = math.max(1200, (durationMs / pages * 0.35).round());
+    final window = math.max(1200, math.min(3000, (durationMs / pages * 0.25).round()));
     var bestD = window + 1;
     for (final pz in pauses) {
       final d = (pz - t).abs();
@@ -110,7 +113,7 @@ List<Layer> buildVerseLayers({
     final arLayer = Layer(
       id: newId(),
       type: 'text',
-      text: _wrap(aWords.sublist(a0, a1), tall ? 4 : 8),
+      text: _wrap(aWords.sublist(a0, a1), longVerse ? (tall ? 5 : 10) : (tall ? 4 : 8)),
       cy: 0.5,
       color: look.arabicColor,
       bold: false,
@@ -118,14 +121,14 @@ List<Layer> buildVerseLayers({
       fontFamily: fontFamily,
     );
     _shade(arLayer, look);
-    _fit(arLayer, tall ? look.arabicTall : look.arabicWide, 0.9);
+    _fit(arLayer, (tall ? look.arabicTall : look.arabicWide) * sizeK, 0.9);
 
     Layer? trLayer;
     if (t1 > t0) {
       trLayer = Layer(
         id: newId(),
         type: 'text',
-        text: _wrap(tWords.sublist(t0, t1), tall ? 5 : 11),
+        text: _wrap(tWords.sublist(t0, t1), longVerse ? (tall ? 7 : 14) : (tall ? 5 : 11)),
         cy: 0.72,
         color: look.translationColor,
         bold: false,
@@ -134,7 +137,7 @@ List<Layer> buildVerseLayers({
         align: translationAlign,
       );
       _shade(trLayer, look);
-      _fit(trLayer, tall ? look.translationTall : look.translationWide, 0.88);
+      _fit(trLayer, (tall ? look.translationTall : look.translationWide) * sizeK, 0.88);
     }
 
     // Stack the two texts so they never overlap, then centre the stack in the frame.

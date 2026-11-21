@@ -66,6 +66,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   bool _showFooter = true;
   bool _endMark = true;
   bool _darken = true;
+  String _autoName = '';
   // Choices that replace the template's own look (null = use the template).
   String? _arFont;
   String? _trFont;
@@ -159,9 +160,13 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
     if (sel == null || !mounted) return;
     setState(() {
       _sel = sel;
-      if (_name.text.trim().isEmpty || _name.text == 'My Qur\'an video') {
-        _name.text = 'Surah ${sel.surah.nameEn}';
+      final rangeText = sel.first == sel.last ? '${sel.first}' : '${sel.first}-${sel.last}';
+      final auto = 'Surah ${sel.surah.nameEn} $rangeText';
+      // Replace the name when it is empty, the default, or the one made from an earlier selection.
+      if (_name.text.trim().isEmpty || _name.text == 'My Qur\'an video' || _name.text == _autoName) {
+        _name.text = auto;
       }
+      _autoName = auto;
     });
   }
 
@@ -331,6 +336,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
       if (lesson == null) throw StateError('The new project was not found.');
       final lookNow = _tpls[_look];
       lesson.qTemplate = lookNow.id;
+      lesson.qReciter = _recs[_rec].id;
       lesson.qLang = _withTr ? _lang : '';
       lesson.qAlign = _align;
       lesson.qFooter = _showFooter;
@@ -793,27 +799,41 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
               ],
             ),
             if (_withTr) ...[
-              label('Language'),
-              DropdownButtonFormField<String>(
-                value: _lang,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down),
-                items: [
-                  for (final e in editions.entries)
-                    DropdownMenuItem(
-                      value: e.key,
-                      child: Row(children: [const Icon(Icons.language, size: 20), const SizedBox(width: 10), Text(e.value.$1)]),
-                    ),
-                ],
-                onChanged: (v) => setState(() => _lang = v ?? _lang),
-              ),
-              label('Translation Edition'),
-              DropdownButtonFormField<String>(
-                value: _lang,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down),
-                items: [DropdownMenuItem(value: _lang, child: Text(cur.$2))],
-                onChanged: (_) {},
+              label('Translation language'),
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _pickTranslation(editions),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: KColors.selected.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: KColors.selected.withOpacity(0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(color: KColors.selected, shape: BoxShape.circle),
+                        child: const Icon(Icons.translate, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(cur.$1, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5)),
+                            Text(cur.$2, style: const TextStyle(fontSize: 12.5)),
+                          ],
+                        ),
+                      ),
+                      Text('${editions.length} languages', style: const TextStyle(fontSize: 11.5)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.keyboard_arrow_right),
+                    ],
+                  ),
+                ),
               ),
               if (_lang != 'en_sahih')
                 const Padding(
@@ -1028,6 +1048,79 @@ onChanged: (v) => setState(() => _showFooter = v),
       _stylePreview(),
       ],
     ];
+  }
+
+  /// A searchable list of translations: language, translator and whether it is downloaded.
+  Future<void> _pickTranslation(Map<String, (String, String)> editions) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) {
+        var query = '';
+        return StatefulBuilder(
+          builder: (c, setSheet) {
+            final list = [
+              for (final e in editions.entries)
+                if (query.isEmpty ||
+                    e.value.$1.toLowerCase().contains(query) ||
+                    e.value.$2.toLowerCase().contains(query))
+                  e,
+            ];
+            return SizedBox(
+              height: MediaQuery.of(c).size.height * 0.75,
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Translation language', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.search),
+                        hintText: 'Search language or translator',
+                      ),
+                      onChanged: (v) => setSheet(() => query = v.trim().toLowerCase()),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (c, i) {
+                        final e = list[i];
+                        final on = e.key == _lang;
+                        final ready = rm.isReady(e.key);
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: on ? KColors.selected : KColors.selected.withOpacity(0.15),
+                            child: Text(
+                              e.value.$1.substring(0, 1),
+                              style: TextStyle(color: on ? Colors.white : KColors.selected, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                          title: Text(e.value.$1, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          subtitle: Text(e.value.$2, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          trailing: on
+                              ? const Icon(Icons.check_circle, color: KColors.selected)
+                              : Text(ready ? 'Ready' : 'Download first', style: const TextStyle(fontSize: 11.5)),
+                          onTap: () => Navigator.of(c).pop(e.key),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (picked != null && mounted) setState(() => _lang = picked);
   }
 
   static const _palette = <int>[

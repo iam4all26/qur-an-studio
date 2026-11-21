@@ -6,6 +6,7 @@ import '../screens/lesson_editor_screen.dart';
 import '../theme.dart';
 import 'new_project_wizard.dart';
 import 'resource_manager.dart';
+import 'reciter_lookup.dart';
 import 'reciters_screen.dart';
 import 'resources_screen.dart';
 import 'templates.dart';
@@ -268,6 +269,13 @@ class HomeDashboard extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
+                  if (c.lessons.first.qReciter.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    ReciterName(
+                      id: c.lessons.first.qReciter,
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ],
                   const SizedBox(height: 3),
                   Text(
                     '${_clock(c.totalMs)}  \u2022  Created ${_date(c.createdAt)}',
@@ -276,6 +284,10 @@ class HomeDashboard extends StatelessWidget {
                 ],
               ),
             ),
+            if (c.lessons.first.qReciter.isNotEmpty) ...[
+              ReciterBadge(id: c.lessons.first.qReciter, radius: 19),
+              const SizedBox(width: 10),
+            ],
             Container(
               width: 38,
               height: 38,

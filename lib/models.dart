@@ -570,6 +570,7 @@ class Lesson {
     this.aspectH = 9,
     this.qTemplate = '',
     this.qLang = '',
+    this.qReciter = '',
     this.qAlign = 'center',
     this.qFooter = true,
   })  : scenes = scenes ?? <Scene>[],
@@ -590,6 +591,9 @@ class Lesson {
 
   /// Translation edition id (en_sahih, ha_gumi) or empty for none.
   String qLang;
+
+  /// Reciter id used for the recitation (empty for older videos).
+  String qReciter;
   String qAlign;
   bool qFooter;
 
@@ -623,6 +627,7 @@ class Lesson {
         'aspectH': aspectH,
         'qTemplate': qTemplate,
         'qLang': qLang,
+        'qReciter': qReciter,
         'qAlign': qAlign,
         'qFooter': qFooter,
         'hiddenTracks': hiddenTracks.toList(),
@@ -649,6 +654,7 @@ class Lesson {
       aspectH: _int(json['aspectH'], 9).clamp(1, 99).toInt(),
       qTemplate: _str(json['qTemplate'], ''),
       qLang: _str(json['qLang'], ''),
+      qReciter: _str(json['qReciter'], ''),
       qAlign: _str(json['qAlign'], 'center'),
       qFooter: json['qFooter'] is bool ? json['qFooter'] as bool : true,
       hiddenTracks: json['hiddenTracks'] is List

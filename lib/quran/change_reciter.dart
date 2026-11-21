@@ -98,6 +98,7 @@ Future<bool> changeReciter(BuildContext context, Lesson lesson) async {
     } else {
       await _apply(lesson, pick, status);
     }
+    lesson.qReciter = pick.id;
   } catch (e) {
     error = '$e';
   }
