@@ -192,6 +192,20 @@ class KainuwaEncoder {
     return _channel.invokeMethod<String>('pick', {'mime': 'image/*'});
   }
 
+  /// Opens the system file picker so several images can be chosen at once.
+  static Future<List<String>> pickImages() async {
+    _init();
+    final r = await _channel.invokeListMethod<String>('pickMany', {'mime': 'image/*'});
+    return r ?? <String>[];
+  }
+
+  /// Opens the system file picker so several videos can be chosen at once.
+  static Future<List<String>> pickVideos() async {
+    _init();
+    final r = await _channel.invokeListMethod<String>('pickMany', {'mime': 'video/*'});
+    return r ?? <String>[];
+  }
+
   /// Opens the system file picker for video. Returns a local copy path, or null if cancelled.
   static Future<String?> pickVideo() {
     _init();

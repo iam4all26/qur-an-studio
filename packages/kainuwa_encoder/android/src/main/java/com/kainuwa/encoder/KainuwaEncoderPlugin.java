@@ -102,6 +102,7 @@ public class KainuwaEncoderPlugin
     private ActivityPluginBinding activityBinding;
 
     private MethodChannel.Result pendingPick;
+    private boolean pendingPickMany;
     private MethodChannel.Result pendingSave;
     private String pendingSavePath;
 
@@ -304,7 +305,10 @@ public class KainuwaEncoderPlugin
     public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         switch (call.method) {
             case "pick":
-                pick((String) call.argument("mime"), result);
+                pick((String) call.argument("mime"), false, result);
+                break;
+            case "pickMany":
+                pick((String) call.argument("mime"), true, result);
                 break;
             case "openStore":
                 openStore((String) call.argument("package"), (String) call.argument("url"), result);
@@ -414,7 +418,7 @@ public class KainuwaEncoderPlugin
 
     // ---- File picker ----
 
-    private void pick(String mime, MethodChannel.Result result) {
+    private void pick(String mime, boolean many, MethodChannel.Result result) {
         if (activity == null) {
             result.error("no_activity", "The app screen is not ready yet.", null);
             return;
@@ -426,6 +430,10 @@ public class KainuwaEncoderPlugin
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType(mime == null ? "*/*" : mime);
+        if (many) {
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
+        pendingPickMany = many;
         pendingPick = result;
         activity.startActivityForResult(intent, REQUEST_PICK);
     }
@@ -444,8 +452,34 @@ public class KainuwaEncoderPlugin
         if (r == null) {
             return true;
         }
-        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) {
+        final boolean many = pendingPickMany;
+        pendingPickMany = false;
+        if (resultCode != Activity.RESULT_OK || data == null
+                || (data.getData() == null && data.getClipData() == null)) {
             r.success(null);
+            return true;
+        }
+        if (many) {
+            final java.util.List<Uri> uris = new java.util.ArrayList<>();
+            if (data.getClipData() != null) {
+                for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                    uris.add(data.getClipData().getItemAt(i).getUri());
+                }
+            } else {
+                uris.add(data.getData());
+            }
+            worker.execute(() -> {
+                try {
+                    final java.util.List<String> paths = new java.util.ArrayList<>();
+                    for (Uri u : uris) {
+                        paths.add(copyToCache(u));
+                    }
+                    mainHandler.post(() -> r.success(paths));
+                } catch (Exception e) {
+                    final String message = String.valueOf(e.getMessage());
+                    mainHandler.post(() -> r.error("copy_failed", message, null));
+                }
+            });
             return true;
         }
         final Uri uri = data.getData();

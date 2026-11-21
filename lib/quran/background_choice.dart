@@ -248,30 +248,42 @@ class _BackgroundChooserState extends State<BackgroundChooser> {
 
   Future<void> _addVideo() async {
     try {
-      final path = await KainuwaEncoder.pickVideo();
-      if (path == null || path.isEmpty) return;
-      final ms = await KainuwaEncoder.audioDuration(path);
-      if (!mounted) return;
-      if (ms < 1000) {
-        setState(() => _note = 'This video length could not be read (it must be at least 1 second long).');
-        return;
+      final paths = await KainuwaEncoder.pickVideos();
+      if (paths.isEmpty) return;
+      final added = <BgItem>[];
+      var bad = 0;
+      for (final path in paths) {
+        final ms = await KainuwaEncoder.audioDuration(path);
+        if (ms < 1000) {
+          bad++;
+          continue;
+        }
+        added.add(BgItem(kind: 2, path: path, ms: ms));
       }
-      setState(() => _note = '');
-      _add(BgItem(kind: 2, path: path, ms: ms));
+      if (!mounted) return;
+      setState(() => _note = bad == 0
+          ? ''
+          : '$bad video(s) could not be read and were skipped (each must be at least 1 second long).');
+      if (added.isNotEmpty) {
+        widget.onChanged(widget.choice.copyWith(template: false, items: [..._items, ...added]));
+      }
     } catch (e) {
-      if (mounted) setState(() => _note = 'Could not open the video: $e');
+      if (mounted) setState(() => _note = 'Could not open the videos: $e');
     }
   }
 
   Future<void> _addPhoto() async {
     try {
-      final path = await KainuwaEncoder.pickImage();
-      if (path == null || path.isEmpty) return;
+      final paths = await KainuwaEncoder.pickImages();
+      if (paths.isEmpty) return;
       if (!mounted) return;
       setState(() => _note = '');
-      _add(BgItem(kind: 3, path: path));
+      widget.onChanged(widget.choice.copyWith(
+        template: false,
+        items: [..._items, for (final p in paths) BgItem(kind: 3, path: p)],
+      ));
     } catch (e) {
-      if (mounted) setState(() => _note = 'Could not open the photo: $e');
+      if (mounted) setState(() => _note = 'Could not open the photos: $e');
     }
   }
 
@@ -516,7 +528,7 @@ class _BackgroundChooserState extends State<BackgroundChooser> {
             child: OutlinedButton.icon(
               onPressed: _addVideo,
               icon: const Icon(Icons.video_library_outlined),
-              label: const Text('Add a video from this phone'),
+              label: const Text('Add videos from this phone'),
             ),
           ),
         if (_tab == 3)
@@ -525,7 +537,7 @@ class _BackgroundChooserState extends State<BackgroundChooser> {
             child: OutlinedButton.icon(
               onPressed: _addPhoto,
               icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: const Text('Add a photo from this phone'),
+              label: const Text('Add photos from this phone'),
             ),
           ),
         if (_tab != 0) _selectedStrip(),

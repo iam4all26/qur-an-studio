@@ -933,6 +933,8 @@ onChanged: (v) => setState(() => _showFooter = v),
               'Pick the Template tab above to see the template pictures.',
               style: TextStyle(fontSize: 11.5, color: Colors.white60)),
         ),
+        const SizedBox(height: 10),
+        _stylePreview(),
       ],
       if (_bg.template) ...[
       const Text('Template', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
@@ -964,7 +966,7 @@ onChanged: (v) => setState(() => _showFooter = v),
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(t.portraitAsset, fit: BoxFit.cover, cacheWidth: 300),
+                  Image.asset(t.previewFor(_dims.$1, _dims.$2), fit: BoxFit.cover, cacheWidth: 300),
                   Center(
                     child: Text(
                       '\u0628\u0650\u0633\u0652\u0645\u0650 \u0671\u0644\u0644\u0651\u064e\u0647\u0650',
@@ -988,7 +990,75 @@ onChanged: (v) => setState(() => _showFooter = v),
           );
         },
       ),
+      const SizedBox(height: 12),
+      _stylePreview(),
       ],
     ];
+  }
+
+  /// Shows the chosen template's fonts, colours and shadow on a sample verse, in the shape of
+  /// the video, so the look can be checked before the video is made.
+  Widget _stylePreview() {
+    final t = _tpls[_look.clamp(0, _tpls.length - 1).toInt()];
+    final rm = ResourceManager.instance;
+    final (w, h) = _dims;
+    final ar = rm.familyIfReady(t.arabicFont, fallback: _family);
+    final tr = rm.familyIfReady(t.translationFont);
+    final shadows = t.shadow
+        ? [Shadow(color: Color(t.shadowColor), blurRadius: 6, offset: const Offset(1, 2))]
+        : <Shadow>[];
+    final ratio = (w / h).clamp(0.45, 2.0).toDouble();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Font preview', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
+        const SizedBox(height: 6),
+        Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: ratio < 1 ? 220 : 340),
+            child: AspectRatio(
+              aspectRatio: ratio,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (_bg.template)
+                      Image.asset(t.assetFor(w, h), fit: BoxFit.cover, cacheWidth: 600)
+                    else
+                      Container(color: const Color(0xFF14121F)),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '\u062a\u064e\u0628\u064e\u0627\u0631\u064e\u0643\u064e \u0671\u0644\u0651\u064e\u0630\u0650\u064a \u0628\u0650\u064a\u064e\u062f\u0650\u0647\u0650 \u0671\u0644\u0652\u0645\u064f\u0644\u0652\u0643\u064f',
+                              textDirection: TextDirection.rtl,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 22, height: 1.6, color: Color(t.arabicColor), fontFamily: ar, shadows: shadows),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Blessed is He in whose hand is dominion',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12.5, color: Color(t.translationColor), fontFamily: tr, shadows: shadows),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text('Arabic: ${t.arabicFont.isEmpty ? 'default' : t.arabicFont}   Translation: ${t.translationFont.isEmpty ? 'default' : t.translationFont}',
+            style: const TextStyle(fontSize: 11.5, color: Colors.white60)),
+      ],
+    );
   }
 }

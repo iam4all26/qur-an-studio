@@ -10,6 +10,7 @@ class QTemplate {
     required this.category,
     required this.portraitAsset,
     required this.landscapeAsset,
+    this.squareAsset = '',
     required this.arabicColor,
     required this.translationColor,
     required this.arabicTall,
@@ -27,6 +28,7 @@ class QTemplate {
   final String category;
   final String portraitAsset;
   final String landscapeAsset;
+  final String squareAsset;
   final int arabicColor;
   final int translationColor;
   final double arabicTall;
@@ -43,8 +45,16 @@ class QTemplate {
   final bool shadow;
   final int shadowColor;
 
-  /// Square and vertical videos use the portrait picture.
-  String assetFor(int w, int h) => w > h ? landscapeAsset : portraitAsset;
+  /// The picture made for the video shape: wide, square or tall. A template without a square
+  /// picture uses the tall one.
+  String assetFor(int w, int h) {
+    if (w > h * 1.05) return landscapeAsset;
+    if (h > w * 1.05) return portraitAsset;
+    return squareAsset.isEmpty ? portraitAsset : squareAsset;
+  }
+
+  /// The picture shown in lists for the shape the person is working in.
+  String previewFor(int w, int h) => assetFor(w, h);
 
   static int _color(dynamic v) => int.parse('$v');
 
@@ -58,6 +68,7 @@ class QTemplate {
       category: j['category'] as String,
       portraitAsset: bg['portrait'] as String,
       landscapeAsset: bg['landscape'] as String,
+      squareAsset: (bg['square'] as String?) ?? '',
       arabicColor: _color(ar['color']),
       translationColor: _color(tr['color']),
       arabicTall: (ar['sizeTall'] as num).toDouble(),

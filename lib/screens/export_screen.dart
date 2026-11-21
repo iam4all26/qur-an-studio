@@ -653,6 +653,18 @@ class _ExportScreenState extends State<ExportScreen> {
     }
   }
 
+  /// "_v1-7" from the verse numbers on the slides ("" for a project without verse slides).
+  String _verseRange(Lesson lesson) {
+    var lo = 0;
+    var hi = 0;
+    for (final sc in lesson.scenes) {
+      if (sc.qSurah <= 0 || sc.qAyah <= 0) continue;
+      if (lo == 0 || sc.qAyah < lo) lo = sc.qAyah;
+      if (sc.qAyah > hi) hi = sc.qAyah;
+    }
+    return lo == 0 ? '' : '_v$lo-$hi';
+  }
+
   String _safeName(String title) {
     final cleaned = title.replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_').replaceAll(RegExp(r'^_+|_+$'), '');
     return cleaned.isEmpty ? 'Video' : cleaned;
@@ -1161,7 +1173,7 @@ class _ExportScreenState extends State<ExportScreen> {
       _defaultsReady = true;
     }
     if (lesson != null && !_nameReady) {
-      _nameCtl.text = 'Quran_${_safeName(lesson.title)}';
+      _nameCtl.text = 'Quran_${_safeName(lesson.title)}${_verseRange(lesson)}';
       _nameReady = true;
     }
     final seconds = lesson == null ? 0 : (lesson.durationMs / 1000);

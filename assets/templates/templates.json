@@ -9,7 +9,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/geometric_gold_p.jpg",
-    "landscape": "assets/templates/bg/geometric_gold_l.jpg"
+    "landscape": "assets/templates/bg/geometric_gold_l.jpg",
+    "square": "assets/templates/bg/geometric_gold_s.jpg"
    },
    "arabic": {
     "font": "Amiri Quran",
@@ -32,7 +33,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/night_mihrab_p.jpg",
-    "landscape": "assets/templates/bg/night_mihrab_l.jpg"
+    "landscape": "assets/templates/bg/night_mihrab_l.jpg",
+    "square": "assets/templates/bg/night_mihrab_s.jpg"
    },
    "arabic": {
     "font": "Noto Naskh Arabic",
@@ -55,7 +57,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/desert_p.jpg",
-    "landscape": "assets/templates/bg/desert_l.jpg"
+    "landscape": "assets/templates/bg/desert_l.jpg",
+    "square": "assets/templates/bg/desert_s.jpg"
    },
    "arabic": {
     "font": "Scheherazade New",
@@ -78,7 +81,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/parchment_p.jpg",
-    "landscape": "assets/templates/bg/parchment_l.jpg"
+    "landscape": "assets/templates/bg/parchment_l.jpg",
+    "square": "assets/templates/bg/parchment_s.jpg"
    },
    "arabic": {
     "font": "Noto Naskh Arabic",
@@ -102,7 +106,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/minimal_p.jpg",
-    "landscape": "assets/templates/bg/minimal_l.jpg"
+    "landscape": "assets/templates/bg/minimal_l.jpg",
+    "square": "assets/templates/bg/minimal_s.jpg"
    },
    "arabic": {
     "font": "Noto Kufi Arabic",
@@ -125,7 +130,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/emerald_p.jpg",
-    "landscape": "assets/templates/bg/emerald_l.jpg"
+    "landscape": "assets/templates/bg/emerald_l.jpg",
+    "square": "assets/templates/bg/emerald_s.jpg"
    },
    "arabic": {
     "font": "Scheherazade New",
@@ -148,7 +154,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/blue_tiles_p.jpg",
-    "landscape": "assets/templates/bg/blue_tiles_l.jpg"
+    "landscape": "assets/templates/bg/blue_tiles_l.jpg",
+    "square": "assets/templates/bg/blue_tiles_s.jpg"
    },
    "arabic": {
     "font": "Reem Kufi",
@@ -171,7 +178,8 @@
    "background": {
     "type": "asset",
     "portrait": "assets/templates/bg/dawn_p.jpg",
-    "landscape": "assets/templates/bg/dawn_l.jpg"
+    "landscape": "assets/templates/bg/dawn_l.jpg",
+    "square": "assets/templates/bg/dawn_s.jpg"
    },
    "arabic": {
     "font": "Noto Naskh Arabic",
@@ -184,6 +192,102 @@
     "color": "0xFFFFF1E6",
     "sizeTall": 40,
     "sizeWide": 34
+   }
+  },
+  {
+   "id": "sapphire",
+   "name": "Sapphire Frame",
+   "category": "Modern",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/sapphire_p.jpg",
+    "landscape": "assets/templates/bg/sapphire_l.jpg",
+    "square": "assets/templates/bg/sapphire_s.jpg"
+   },
+   "arabic": {
+    "font": "Amiri Quran",
+    "color": "0xFFFFFFFF",
+    "sizeTall": 72,
+    "sizeWide": 58
+   },
+   "translation": {
+    "font": "Noto Serif",
+    "color": "0xFFE8C96A",
+    "sizeTall": 38,
+    "sizeWide": 32
+   }
+  },
+  {
+   "id": "rose",
+   "name": "Rose Dusk",
+   "category": "Cinematic",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/rose_p.jpg",
+    "landscape": "assets/templates/bg/rose_l.jpg",
+    "square": "assets/templates/bg/rose_s.jpg"
+   },
+   "arabic": {
+    "font": "Scheherazade New",
+    "color": "0xFFFFF4EC",
+    "sizeTall": 72,
+    "sizeWide": 58
+   },
+   "translation": {
+    "font": "Noto Sans",
+    "color": "0xFFFFD9C7",
+    "sizeTall": 38,
+    "sizeWide": 32
+   }
+  },
+  {
+   "id": "forest",
+   "name": "Forest Mist",
+   "category": "Natural",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/forest_p.jpg",
+    "landscape": "assets/templates/bg/forest_l.jpg",
+    "square": "assets/templates/bg/forest_s.jpg"
+   },
+   "arabic": {
+    "font": "Noto Naskh Arabic",
+    "color": "0xFFFFFFFF",
+    "sizeTall": 72,
+    "sizeWide": 58
+   },
+   "translation": {
+    "font": "Noto Sans",
+    "color": "0xFFBDEBD8",
+    "sizeTall": 38,
+    "sizeWide": 32
+   }
+  },
+  {
+   "id": "ivory",
+   "name": "Ivory Page",
+   "category": "Minimal",
+   "shadow": true,
+   "background": {
+    "type": "asset",
+    "portrait": "assets/templates/bg/ivory_p.jpg",
+    "landscape": "assets/templates/bg/ivory_l.jpg",
+    "square": "assets/templates/bg/ivory_s.jpg"
+   },
+   "arabic": {
+    "font": "Amiri Quran",
+    "color": "0xFF2B1B08",
+    "sizeTall": 72,
+    "sizeWide": 58
+   },
+   "translation": {
+    "font": "Noto Serif",
+    "color": "0xFF6B4A1E",
+    "sizeTall": 38,
+    "sizeWide": 32
    }
   }
  ]
