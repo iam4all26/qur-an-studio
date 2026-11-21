@@ -18,6 +18,8 @@ import '../transition_math.dart';
 import '../watermark.dart';
 import '../scene_canvas.dart';
 import '../hands.dart';
+import '../quran/outro.dart';
+import '../quran/reciter_lookup.dart';
 import '../stage_shape.dart';
 import '../text_reveal.dart';
 import '../theme.dart';
@@ -52,6 +54,7 @@ class _ExportScreenState extends State<ExportScreen> {
   int _stageSerial = 0;
 
   // Choices made on this screen for this export.
+  bool _outro = true;
   int _quality = 720; // output height: 480, 720, 1080 or 1440
   int _fps = 30;
   double _mbps = 8;
@@ -240,6 +243,17 @@ class _ExportScreenState extends State<ExportScreen> {
       final v = viewScene(s, hidden);
       return identical(v, s) ? s.duplicate() : v;
     }).toList();
+    // The built-in ending clip (logo, credits, Google Play).
+    var outroMs = 0;
+    if (_outro) {
+      var who = '';
+      if (lesson.qReciter.isNotEmpty) {
+        who = (await ReciterLookup.all())[lesson.qReciter]?.$1 ?? '';
+      }
+      final outro = buildOutroScene(aspectW: lesson.aspectW, aspectH: lesson.aspectH, reciterName: who);
+      scenes.add(outro);
+      outroMs = outro.durationMs;
+    }
     final outSize = _outFor(_quality);
     final outW = outSize.$1;
     final outH = outSize.$2;
@@ -635,7 +649,7 @@ class _ExportScreenState extends State<ExportScreen> {
       _pThumb = thumbPath;
       _pW = outW;
       _pH = outH;
-      _pDur = lesson.durationMs;
+      _pDur = lesson.durationMs + outroMs;
       await _save(output, title, missingNarration);
     } on _Cancelled {
       _set('Export cancelled.');
@@ -1318,6 +1332,14 @@ class _ExportScreenState extends State<ExportScreen> {
               style: const TextStyle(fontSize: 12, color: Colors.white60),
             ),
           ],
+        )),
+        card(SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Add the ending clip'),
+          subtitle: const Text('A short animated end: app logo, credits and Google Play',
+              style: TextStyle(fontSize: 12)),
+          value: _outro,
+          onChanged: _busy ? null : (v) => setState(() => _outro = v),
         )),
         card(Column(
           crossAxisAlignment: CrossAxisAlignment.start,

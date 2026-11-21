@@ -27,6 +27,7 @@ flutter:
     - assets/icon/app_icon.png
     - assets/templates/
     - assets/templates/bg/
+    - assets/outro/
   fonts:
     - family: Manrope
       fonts:
