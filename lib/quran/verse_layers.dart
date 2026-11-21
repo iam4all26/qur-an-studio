@@ -272,3 +272,16 @@ Future<List<int>> versePauses(String path, int totalMs, int trimStartMs, int dur
     return const [];
   }
 }
+
+/// A full-size black layer under the text of a slide. The editor's Darken background control
+/// finds it by the id prefix overlay_.
+Layer darkOverlayLayer(String sceneId, double opacity) => Layer(
+      id: 'overlay_$sceneId',
+      type: 'shape',
+      cx: 0.5,
+      cy: 0.5,
+      w: 1.0,
+      h: 1.0,
+      color: 0xFF000000,
+      opacity: opacity,
+    );

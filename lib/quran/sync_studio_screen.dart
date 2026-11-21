@@ -463,11 +463,15 @@ class _SyncStudioScreenState extends State<SyncStudioScreen> {
           translationFont: rm.familyIfReady(look.translationFont),
           footer: _footer ? '${sel.surah.nameEn} - ${sel.surah.number}:${v.ayah}' : null,
         );
-        lesson.scenes.addAll(plan.scenesFor(
+        final made = plan.scenesFor(
           durationMs: _b[i + 1] - _b[i],
           layers: layers,
           imageAsset: look.assetFor(aw, ah),
-        ));
+        );
+        for (final sc in made) {
+          sc.layers.insert(0, darkOverlayLayer(sc.id, 0.5));
+        }
+        lesson.scenes.addAll(made);
       }
       lesson.audioClips.add(AudioClip(
         id: newId(),

@@ -32,7 +32,8 @@ Future<String?> editBackground(BuildContext context, Lesson lesson, Scene? scene
           _tile(c, Icons.movie_filter_outlined, 'Video backgrounds', 'Moving sky, clouds, water and more', 'clips'),
           _tile(c, Icons.video_library_outlined, 'My video', 'Use a video from your phone', 'video'),
           _tile(c, Icons.photo_outlined, 'My photo', 'Use a photo from your phone', 'photo'),
-          _tile(c, Icons.contrast, 'Darken background', 'Makes the text readable on any background', 'dark'),
+          _tile(c, Icons.contrast, 'Darken background', 'Makes the text readable on any background', 'dark',
+              dot: lesson.scenes.any((sc) => sc.layers.any((l) => l.id.startsWith('overlay_') && l.opacity > 0.001))),
           const SizedBox(height: 8),
         ],
       ),
@@ -153,7 +154,7 @@ void _say(BuildContext context, String m) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 }
 
-Widget _tile(BuildContext c, IconData icon, String title, String sub, String value) {
+Widget _tile(BuildContext c, IconData icon, String title, String sub, String value, {bool dot = false}) {
   return ListTile(
     leading: Container(
       width: 40,
@@ -161,7 +162,19 @@ Widget _tile(BuildContext c, IconData icon, String title, String sub, String val
       decoration: BoxDecoration(color: KColors.selected, borderRadius: BorderRadius.circular(12)),
       child: Icon(icon, color: Colors.white),
     ),
-    title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+    title: Row(
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        if (dot) ...[
+          const SizedBox(width: 8),
+          Container(
+            width: 9,
+            height: 9,
+            decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle),
+          ),
+        ],
+      ],
+    ),
     subtitle: Text(sub, style: const TextStyle(fontSize: 12.5)),
     onTap: () => Navigator.of(c).pop(value),
   );

@@ -65,6 +65,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
   bool _withTr = true;
   bool _showFooter = true;
   bool _endMark = true;
+  bool _darken = true;
   // Choices that replace the template's own look (null = use the template).
   String? _arFont;
   String? _trFont;
@@ -361,6 +362,7 @@ class _NewProjectWizardState extends State<NewProjectWizard> {
           // Remember which verse this slide shows (the Basmala slide has an empty label and ayah 0).
           sc.qSurah = it.label.isEmpty ? surahNo : int.parse(it.audioCode.substring(0, 3));
           sc.qAyah = it.label.isEmpty ? 0 : int.parse(it.audioCode.substring(3));
+          if (_darken) sc.layers.insert(0, darkOverlayLayer(sc.id, 0.5));
         }
         lesson.scenes.addAll(made);
         if (durations[i] > 0) {
@@ -939,6 +941,14 @@ onChanged: (v) => setState(() => _showFooter = v),
         child: Text('Background', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),
       ),
       BackgroundChooser(choice: _bg, onChanged: (c) => setState(() => _bg = c)),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Darken the background (50%)'),
+        subtitle: const Text('Keeps the text readable. It can be changed later in the editor.',
+            style: TextStyle(fontSize: 11.5)),
+        value: _darken,
+        onChanged: (v) => setState(() => _darken = v),
+      ),
       const SizedBox(height: 12),
       if (!_bg.template) ...[
         const Text('Text style', style: TextStyle(fontWeight: FontWeight.w800, color: KColors.gold)),

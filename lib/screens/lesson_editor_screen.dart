@@ -2722,7 +2722,37 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
     (Icons.aspect_ratio, 'Format'),
   ];
 
+  /// True when the dark layer is on (a small green dot is shown on Background).
+  bool _isDark() {
+    final lesson = _lesson();
+    return lesson != null && _overlayNow(lesson) > 0.001;
+  }
+
+  Widget _withDot(Widget icon, int i, bool dark) {
+    if (i != 1 || !dark) return icon;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        icon,
+        Positioned(
+          right: -2,
+          top: -2,
+          child: Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2ECC71),
+              shape: BoxShape.circle,
+              border: Border.all(color: KColors.editorCard, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _bottomNav(double u) {
+    final dark = _isDark();
     final bottom = MediaQuery.of(context).padding.bottom;
     const items = _tools;
     return Container(
@@ -2751,10 +2781,14 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
                           color: _tab == i ? KColors.selected : Colors.transparent,
                           borderRadius: BorderRadius.circular(_s(u, 30, 14)),
                         ),
-                        child: Icon(
-                          items[i].$1,
-                          size: _s(u, 46, 22),
-                          color: _tab == i ? Colors.white : KColors.editorNavIcon,
+                        child: _withDot(
+                          Icon(
+                            items[i].$1,
+                            size: _s(u, 46, 22),
+                            color: _tab == i ? Colors.white : KColors.editorNavIcon,
+                          ),
+                          i,
+                          dark,
                         ),
                       ),
                       SizedBox(height: _s(u, 6, 2)),
@@ -2811,10 +2845,14 @@ class _LessonEditorScreenState extends State<LessonEditorScreen>
                         color: _tab == i ? KColors.selected : Colors.transparent,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        items[i].$1,
-                        size: 24,
-                        color: _tab == i ? Colors.white : KColors.editorNavIcon,
+                      child: _withDot(
+                        Icon(
+                          items[i].$1,
+                          size: 24,
+                          color: _tab == i ? Colors.white : KColors.editorNavIcon,
+                        ),
+                        i,
+                        _isDark(),
                       ),
                     ),
                   ),
